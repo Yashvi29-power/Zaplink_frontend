@@ -254,9 +254,9 @@ const Profile: React.FC = () => {
             ) : !leetcodeProfile ? (
               <Card>
                 <CardContent className="p-12 text-center">
-                  <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
+                  {/* <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" /> */}
                   <p className="text-muted-foreground">
-                    Loading LeetCode data...
+                    No LeetCode data available. Please ensure your LeetCode session
                   </p>
                 </CardContent>
               </Card>
