@@ -1,54 +1,158 @@
-# React + TypeScript + Vite
+# Zaplink Frontend - GDG CHARUSAT Open Source Contri Sprintathon
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🎯 About This Project
 
-Currently, two official plugins are available:
+Zaplink is an open-source project maintained by GDG CHARUSAT. This frontend is built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, providing a modern and responsive user experience.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This repository is part of the **GDG CHARUSAT Open Source Contri Sprintathon** - a hands-on event designed to help students learn about open source contribution!
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Quick Start for Contributors
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm
+- Git
+
+### Installation
+
+1. **Fork this repository** by clicking the "Fork" button at the top right
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/Zaplink_frontend.git
+   cd Zaplink_frontend
+   ```
+
+3. **Add upstream remote**
+   ```bash
+   git remote add upstream https://github.com/gdg-charusat/Zaplink_frontend.git
+   ```
+
+4. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+5. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+The app will be running at `http://localhost:5173` 🎉
+
+---
+
+## 📚 Contributing
+
+We welcome contributions from developers of all skill levels! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to get started.
+
+### Finding Issues
+
+Browse our [Issues](https://github.com/gdg-charusat/Zaplink_frontend/issues) page for tasks:
+
+- **Beginner** 🟢: Look for `good-first-issue` or `beginner` labels
+- **Intermediate** 🟡: Look for `intermediate` label
+
+### Contribution Workflow
+
+1. Pick an issue and comment to get assigned
+2. Create a new branch: `git checkout -b feature/your-feature-name`
+3. Make your changes
+4. Commit: `git commit -m "feat: add feature description"`
+5. Push: `git push origin feature/your-feature-name`
+6. Open a Pull Request
+
+Need help? Check out our detailed [CONTRIBUTING.md](CONTRIBUTING.md) guide!
+
+---
+
+## 🛠 Tech Stack
+
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool & dev server
+- **Tailwind CSS** - Utility-first CSS
+- **Shadcn/ui** - Component library
+
+---
+
+## 📁 Project Structure
+
+```
+Zaplink_frontend/
+├── src/
+│   ├── components/      # Reusable React components
+│   ├── pages/          # Page components
+│   ├── hooks/          # Custom React hooks
+│   ├── utils/          # Helper functions
+│   ├── types/          # TypeScript type definitions
+│   ├── styles/         # Global styles
+│   └── assets/         # Static assets (images, fonts)
+├── public/             # Public static files
+├── CONTRIBUTING.md     # Contribution guidelines
+└── README.md           # This file
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🧪 Available Scripts
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run linter
+npm run lint
 ```
+
+---
+
+## 🤝 Community
+
+- **Event**: GDG CHARUSAT Open Source Contri Sprintathon
+- **Discord/WhatsApp**: [Link to community group]
+- **Maintainers**: [List maintainer GitHub usernames]
+
+---
+
+## 📜 Code of Conduct
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) to understand the expected behavior in our community.
+
+---
+
+## 📝 License
+
+[Add your license here]
+
+---
+
+## 🌟 Contributors
+
+Thanks to all our amazing contributors!
+
+<!-- Add contributor badges or list here -->
+
+---
+
+## 📞 Need Help?
+
+- 📖 Check the [CONTRIBUTING.md](CONTRIBUTING.md) guide
+- 💬 Comment on the issue you're working on
+- 🗣️ Ask in the event Discord/WhatsApp group
+- 🐛 Found a bug? [Create an issue](https://github.com/gdg-charusat/Zaplink_frontend/issues/new)
+
+---
+
+**Happy Coding! 🚀**
+
+Made with ❤️ by GDG CHARUSAT
