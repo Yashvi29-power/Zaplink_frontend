@@ -5,6 +5,7 @@ import Customize from "./components/Customize";
 import HowItWorks from "./components/HowItWorks";
 import AboutUs from "./components/AboutUs";
 import ViewZap from "./components/ViewZap";
+import NotFound from "./pages/NotFound";
 // import UrlShortenerPage from "./components/UrlShortenerPage";
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
@@ -72,6 +73,7 @@ export default function App() {
         />
         <Route path="/zaps/:shortId" element={<ViewZapWrapper />} />
         {/* // <Route path="/url-shortener" element={<UrlShortenerPage />} /> */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Analytics />
     </>
