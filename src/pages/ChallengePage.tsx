@@ -7,127 +7,77 @@ import {
   DollarSign,
   Users,
   Clock,
-  Settings,
   Loader2,
   PlayCircle,
 } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
-import MembersList from "@/components/challenge/MembersList";
 import ProgressChart from "@/components/dashboard/ProgressChart";
 import { mockChartData } from "@/data/mockData";
 import { cn } from "@/lib/utils";
-import { challengeApi, dashboardApi } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 
-const difficultyColors = {
-  easy: "bg-success/10 text-success border-success/20",
-  medium: "bg-warning/10 text-warning border-warning/20",
-  hard: "bg-destructive/10 text-destructive border-destructive/20",
+const difficultyColors: Record<string, string> = {
+  easy: "bg-green-500/10 text-green-600 border-green-500/20",
+  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  hard: "bg-red-500/10 text-red-600 border-red-500/20",
   any: "bg-primary/10 text-primary border-primary/20",
 };
 
 const ChallengePage: React.FC = () => {
   const { id } = useParams();
-  const { toast } = useToast();
-  const { user } = useAuth();
+
   const [challenge, setChallenge] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
 
+  // ✅ Mock Data Loader
   useEffect(() => {
-    if (id) {
-      loadChallengeData();
-    }
+    setTimeout(() => {
+      setChallenge({
+        id,
+        name: "30 Day Coding Challenge",
+        description:
+          "Solve at least 2 problems daily to stay consistent and avoid penalties.",
+        startDate: "2026-02-01",
+        endDate: "2026-03-02",
+        difficultyFilter: ["easy", "medium"],
+        status: "ACTIVE",
+        ownerId: "1",
+        minSubmissionsPerDay: 2,
+        penaltyAmount: 5,
+      });
+
+      setLeaderboard([
+        { userId: "1", userName: "John Doe", totalPenalty: 10 },
+        { userId: "2", userName: "Alice Smith", totalPenalty: 0 },
+        { userId: "3", userName: "David Lee", totalPenalty: 5 },
+      ]);
+
+      setIsLoading(false);
+    }, 800);
   }, [id]);
 
-  const loadChallengeData = async () => {
-    setIsLoading(true);
-    try {
-      const challengeResponse = await challengeApi.getById(id!);
-      const leaderboardResponse = await dashboardApi.getChallengeLeaderboard(
-        id!
-      );
-
-      if (challengeResponse.success && challengeResponse.data) {
-        setChallenge(challengeResponse.data);
-      }
-
-      if (leaderboardResponse.success && leaderboardResponse.data) {
-        setLeaderboard(leaderboardResponse.data);
-      }
-    } catch (error: any) {
-      console.error("Failed to load challenge:", error);
-      toast({
-        title: "Failed to load challenge",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleJoinChallenge = async () => {
-    if (!id) return;
-
+  const handleJoinChallenge = () => {
     setIsJoining(true);
-    try {
-      const response = await challengeApi.join(id);
-
-      if (response.success) {
-        toast({
-          title: "Joined challenge!",
-          description: "You have successfully joined the challenge.",
-        });
-        loadChallengeData(); // Reload data
-      } else {
-        throw new Error(response.message || "Failed to join challenge");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Failed to join challenge",
-        description:
-          error.response?.data?.message || error.message || "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+    setTimeout(() => {
+      alert("Joined Challenge (Mock)");
       setIsJoining(false);
-    }
+    }, 800);
   };
 
-  const handleActivateChallenge = async () => {
+  const handleActivateChallenge = () => {
     setIsActivating(true);
-    try {
-      const response = await challengeApi.updateStatus(id!, "ACTIVE");
-
-      if (response.success) {
-        toast({
-          title: "Challenge activated!",
-          description:
-            "Your challenge is now active and visible to all members.",
-        });
-        loadChallengeData(); // Reload data
-      } else {
-        throw new Error(response.message || "Failed to activate challenge");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Failed to activate challenge",
-        description:
-          error.response?.data?.message || error.message || "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+    setTimeout(() => {
+      alert("Challenge Activated (Mock)");
       setIsActivating(false);
-    }
+    }, 800);
   };
 
   if (isLoading) {
@@ -164,9 +114,13 @@ const ChallengePage: React.FC = () => {
       (1000 * 60 * 60 * 24)
   );
 
-  const progress = Math.round(((totalDays - daysRemaining) / totalDays) * 100);
+  const progress = Math.max(
+    0,
+    Math.min(100, Math.round(((totalDays - daysRemaining) / totalDays) * 100))
+  );
+
   const difficultyDisplay =
-    challenge.difficultyFilter && challenge.difficultyFilter.length > 0
+    challenge.difficultyFilter?.length > 0
       ? challenge.difficultyFilter.join(", ")
       : "Any";
 
@@ -186,21 +140,30 @@ const ChallengePage: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold">{challenge.name}</h1>
-              <Badge variant="outline" className={cn(difficultyColors.any)}>
+
+              <Badge
+                variant="outline"
+                className={cn(difficultyColors.any)}
+              >
                 {difficultyDisplay}
               </Badge>
+
               <Badge
                 variant="outline"
                 className={
                   challenge.status === "ACTIVE"
-                    ? "bg-success/10 text-success"
+                    ? "bg-green-500/10 text-green-600"
                     : ""
                 }
               >
                 {challenge.status}
               </Badge>
             </div>
-            <p className="text-muted-foreground">{challenge.description}</p>
+
+            <p className="text-muted-foreground">
+              {challenge.description}
+            </p>
+
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -209,28 +172,28 @@ const ChallengePage: React.FC = () => {
                   {new Date(challenge.endDate).toLocaleDateString()}
                 </span>
               </div>
+
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span>{daysRemaining} days left</span>
               </div>
             </div>
           </div>
+
           <div className="flex gap-2">
-            {challenge.status === "PENDING" &&
-              challenge.ownerId === user?.id && (
-                <Button
-                  className="gap-2 gradient-primary"
-                  onClick={handleActivateChallenge}
-                  disabled={isActivating}
-                >
-                  {isActivating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <PlayCircle className="h-4 w-4" />
-                  )}
-                  Activate Challenge
-                </Button>
+            <Button
+              className="gap-2 gradient-primary"
+              onClick={handleActivateChallenge}
+              disabled={isActivating}
+            >
+              {isActivating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <PlayCircle className="h-4 w-4" />
               )}
+              Activate Challenge
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -250,62 +213,48 @@ const ChallengePage: React.FC = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="hover-lift">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Target className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Daily Target</p>
-                  <p className="text-xl font-semibold">
-                    {challenge.minSubmissionsPerDay}
-                  </p>
-                </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Target className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Daily Target</p>
+                <p className="text-xl font-semibold">
+                  {challenge.minSubmissionsPerDay}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover-lift">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
-                  <DollarSign className="h-5 w-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Penalty</p>
-                  <p className="text-xl font-semibold">
-                    ${challenge.penaltyAmount}
-                  </p>
-                </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <DollarSign className="h-5 w-5 text-red-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">Penalty</p>
+                <p className="text-xl font-semibold">
+                  ${challenge.penaltyAmount}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover-lift">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
-                  <Users className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Members</p>
-                  <p className="text-xl font-semibold">{leaderboard.length}</p>
-                </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Users className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">Members</p>
+                <p className="text-xl font-semibold">
+                  {leaderboard.length}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover-lift">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
-                  <Clock className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Progress</p>
-                  <p className="text-xl font-semibold">{progress}%</p>
-                </div>
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Clock className="h-5 w-5 text-yellow-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">Progress</p>
+                <p className="text-xl font-semibold">{progress}%</p>
               </div>
             </CardContent>
           </Card>
@@ -314,9 +263,9 @@ const ChallengePage: React.FC = () => {
         {/* Progress Bar */}
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Challenge Progress</span>
-              <span className="text-sm text-muted-foreground">
+            <div className="flex justify-between mb-2 text-sm">
+              <span>Challenge Progress</span>
+              <span>
                 {totalDays - daysRemaining} of {totalDays} days
               </span>
             </div>
@@ -325,7 +274,7 @@ const ChallengePage: React.FC = () => {
         </Card>
 
         {/* Tabs */}
-        <Tabs defaultValue="members" className="space-y-4">
+        <Tabs defaultValue="members">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="progress">Progress</TabsTrigger>
@@ -334,43 +283,27 @@ const ChallengePage: React.FC = () => {
           <TabsContent value="members">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Challenge Leaderboard</CardTitle>
+                <CardTitle>Leaderboard</CardTitle>
               </CardHeader>
               <CardContent>
-                {leaderboard.length > 0 ? (
-                  <div className="space-y-2">
-                    {leaderboard.map((member, index) => (
-                      <div
-                        key={member.userId}
-                        className="flex items-center justify-between p-3 rounded-lg border"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-lg">
-                            #{index + 1}
-                          </span>
-                          <div>
-                            <p className="font-medium">
-                              {member.userName || member.username}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Penalties: ${member.totalPenalty || 0}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                {leaderboard.map((member, index) => (
+                  <div
+                    key={member.userId}
+                    className="flex justify-between p-3 border rounded-lg mb-2"
+                  >
+                    <span>#{index + 1} {member.userName}</span>
+                    <span>Penalty: ${member.totalPenalty}</span>
                   </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No members yet
-                  </p>
-                )}
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="progress">
-            <ProgressChart data={mockChartData} title="Team Progress" />
+            <ProgressChart
+              data={mockChartData}
+              title="Team Progress"
+            />
           </TabsContent>
         </Tabs>
       </div>
