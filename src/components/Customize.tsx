@@ -10,6 +10,7 @@ import {
   Palette,
   Sparkles,
   Check,
+  PackageOpen,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "./ui/button";
@@ -22,6 +23,14 @@ import {
 } from "./ui/select";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
+import FormatSelector from "./export/FormatSelector";
+import ResolutionSelector from "./export/ResolutionSelector";
+import ExportPreview from "./export/ExportPreview";
+import type { ExportFormat } from "../lib/qr-export";
+import {
+  exportQRCode,
+  batchExport,
+} from "../lib/qr-export";
 
 type FrameOption =
   | "none"
@@ -48,6 +57,12 @@ export default function CustomizePage() {
   const [logo, setLogo] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Multi-format export state
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
+  const [exportResolution, setExportResolution] = useState(1000);
+  const [exportQuality, setExportQuality] = useState(85);
+  const [isExporting, setIsExporting] = useState(false);
 
   const qrValue = state?.shortUrl || "https://zaplink.example.com/demo123";
 
@@ -107,34 +122,42 @@ export default function CustomizePage() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!qrRef.current) return;
-    const svgElement = qrRef.current.querySelector("svg");
-    if (!svgElement) return;
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const svgUrl = URL.createObjectURL(svgBlob);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 300;
-      canvas.height = 300;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `zaplink-qr-${state?.name || "code"}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-      URL.revokeObjectURL(svgUrl);
-      toast.success("Your QR code has been downloaded successfully.");
-    };
-    img.src = svgUrl;
+    setIsExporting(true);
+    try {
+      await exportQRCode(qrRef.current, {
+        format: exportFormat,
+        resolution: exportResolution,
+        quality: exportQuality,
+        includeFrame: frameStyle !== "none",
+        includeLogo: !!logo,
+        fileName: `zaplink-qr-${state?.name || "code"}`,
+      });
+      toast.success(`QR code exported as ${exportFormat.toUpperCase()} successfully.`);
+    } catch {
+      toast.error("Failed to export QR code. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleBatchDownload = async () => {
+    if (!qrRef.current) return;
+    setIsExporting(true);
+    try {
+      await batchExport(
+        qrRef.current,
+        `zaplink-qr-${state?.name || "code"}`,
+        exportResolution,
+        exportQuality
+      );
+      toast.success("All formats downloaded successfully.");
+    } catch {
+      toast.error("Batch export failed. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleCopyLink = async () => {
@@ -327,23 +350,56 @@ export default function CustomizePage() {
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Export Options */}
               <div className="space-y-6 pt-6 border-t border-border">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-green-500/10 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-green-500" />
+                    <Download className="h-5 w-5 text-green-500" />
                   </div>
                   <h2 className="text-xl font-bold text-foreground">
-                    Actions
+                    Export Options
                   </h2>
                 </div>
+
+                <FormatSelector
+                  value={exportFormat}
+                  onChange={setExportFormat}
+                />
+
+                {exportFormat !== "svg" && (
+                  <ResolutionSelector
+                    value={exportResolution}
+                    onChange={setExportResolution}
+                    disabled={exportFormat === "pdf"}
+                  />
+                )}
+
+                <ExportPreview
+                  format={exportFormat}
+                  resolution={exportResolution}
+                  quality={exportQuality}
+                  onQualityChange={setExportQuality}
+                />
+
                 <div className="grid grid-cols-1 gap-4">
                   <Button
                     onClick={handleDownload}
-                    className="h-14 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl focus-ring"
+                    disabled={isExporting}
+                    className="h-14 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl focus-ring disabled:opacity-60"
                   >
                     <Download className="h-5 w-5 mr-2" />
-                    Download QR Code
+                    {isExporting
+                      ? "Exporting..."
+                      : `Download ${exportFormat.toUpperCase()}`}
+                  </Button>
+                  <Button
+                    onClick={handleBatchDownload}
+                    disabled={isExporting}
+                    variant="outline"
+                    className="h-12 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-background focus-ring disabled:opacity-60"
+                  >
+                    <PackageOpen className="h-4 w-4 mr-2" />
+                    Download All Formats
                   </Button>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
