@@ -117,6 +117,7 @@ export default function UploadPage() {
     () => sessionStorage.getItem("timeValue") || ""
   );
   const [loading, setLoading] = useState(false);
+  const [currentStep] = useState(2);
   const [type, setType] = useState<FileType>(initialType);
   const [urlValue, setUrlValue] = useState("");
   const [textValue, setTextValue] = useState("");
@@ -496,8 +497,7 @@ export default function UploadPage() {
     if (!file) return;
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${
-          type.charAt(0).toUpperCase() + type.slice(1)
+        `${type.charAt(0).toUpperCase() + type.slice(1)
         } files must be ≤${MAX_SIZE_MB}MB.`
       );
       e.target.value = "";
@@ -551,8 +551,8 @@ export default function UploadPage() {
     (type === "url"
       ? urlValue.trim()
       : type === "text"
-      ? textValue.trim()
-      : uploadedFile) &&
+        ? textValue.trim()
+        : uploadedFile) &&
     (!passwordProtect || password.trim()) &&
     (!selfDestruct ||
       (destructViews && viewsValue.trim()) ||
@@ -594,14 +594,17 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-4xl">
-        <div className="bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border">
+        <div className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}>
           {/* Step Indicator */}
           <div className="flex items-center justify-between mb-8 sm:mb-12">
             <span className="text-xs sm:text-sm text-primary font-semibold bg-primary/10 px-4 py-2 rounded-full">
-              Step 2 of 3
+              Step {currentStep} of 3
             </span>
             <div className="flex-1 mx-4 sm:mx-6 h-2 bg-muted rounded-full overflow-hidden">
-              <div className="progress-bar h-full w-2/3"></div>
+              <div
+                className="progress-bar h-full transition-all duration-500 ease-in-out bg-gradient-to-r from-primary via-primary/80 to-primary shadow-md"
+                style={{ width: `${(currentStep / 3) * 100}%` }}
+              ></div>
             </div>
             <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
               Customize
@@ -888,20 +891,20 @@ export default function UploadPage() {
           {/* Continue to QR Button */}
           {lastQR &&
             lastQRFormHash ===
-              getFormDataHash({
-                qrName,
-                uploadedFile,
-                passwordProtect,
-                password,
-                selfDestruct,
-                destructViews,
-                destructTime,
-                viewsValue,
-                timeValue,
-                urlValue,
-                textValue,
-                type,
-              }) && (
+            getFormDataHash({
+              qrName,
+              uploadedFile,
+              passwordProtect,
+              password,
+              selfDestruct,
+              destructViews,
+              destructTime,
+              viewsValue,
+              timeValue,
+              urlValue,
+              textValue,
+              type,
+            }) && (
               <div className="w-full flex justify-center">
                 <Button
                   className="w-full max-w-md h-14 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] focus-ring"
