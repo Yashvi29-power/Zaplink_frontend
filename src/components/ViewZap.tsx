@@ -71,35 +71,27 @@ export default function ViewZap() {
       setPasswordRequired(false);
       setPasswordError(null);
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
+        // First, check the metadata to validate access and detect errors
+        await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}/metadata`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+          }
         );
-        // If successful, the backend will redirect or serve the file.
-        if (response.data) {
-          window.location.href = response.data.url;
-        }
+        
+        // If metadata check passes, redirect to the API endpoint
+        // The browser will automatically follow the redirect from the backend to Cloudinary
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`;
+        return;
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         if (error.response?.status === 401) {
-          // Check if it's a password required error
-          if (
-            error.response.data?.message
-              ?.toLowerCase()
-              .includes("password required")
-          ) {
-            setPasswordRequired(true);
-            setLoading(false);
-            return;
-          } else if (
-            error.response.data?.message
-              ?.toLowerCase()
-              .includes("incorrect password")
-          ) {
-            setPasswordError("Incorrect password. Please try again.");
-            setPasswordRequired(true);
-            setLoading(false);
-            return;
-          }
+          // Password required
+          setPasswordRequired(true);
+          setLoading(false);
+          return;
         } else if (error.response?.status === 410) {
           setError("This link has expired. The file is no longer available.");
           setErrorType("expired");
@@ -137,8 +129,10 @@ export default function ViewZap() {
     setVerifying(true);
     setPasswordError(null);
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`,
+      // First verify the password by making a request with it
+      // The backend will return 200 if correct, 401 if wrong
+      const checkResponse = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}/metadata`,
         {
           params: { password },
           headers: {
@@ -146,142 +140,22 @@ export default function ViewZap() {
           },
         }
       );
-
-      // Handle successful response
-      if (response.data) {
-        const { type, url, content, data, name } = response.data;
-
-        if (
-          type === "redirect" ||
-          type === "file" ||
-          type === "pdf" ||
-          type === "video" ||
-          type === "audio"
-        ) {
-          // Redirect to the URL
-          window.location.href = url;
-        } else if (type === "text" || type === "document") {
-          // Escape HTML entities for security
-          const escapeHtml = (unsafe: string) =>
-            unsafe
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
-          const escapedContent = escapeHtml(content);
-          const escapedName = escapeHtml(name || "Untitled");
-          // Use the backend's dark theme template
-          const html = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${escapedName}</title>
-                <style>
-                    body {
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        line-height: 1.6;
-                        color: #e5e7eb;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        padding: 20px;
-                        background-color: #111827;
-                        min-height: 100vh;
-                    }
-                    .container {
-                        background: #1f2937;
-                        padding: 30px;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                        border: 1px solid #374151;
-                    }
-                    h1 {
-                        color: #f9fafb;
-                        margin-bottom: 20px;
-                        border-bottom: 2px solid #3b82f6;
-                        padding-bottom: 10px;
-                        font-size: 2rem;
-                        font-weight: 600;
-                    }
-                    .content {
-                        white-space: pre-wrap;
-                        word-wrap: break-word;
-                        font-size: 16px;
-                        color: #d1d5db;
-                        line-height: 1.7;
-                    }
-                    .footer {
-                        margin-top: 30px;
-                        padding-top: 20px;
-                        border-top: 1px solid #374151;
-                        text-align: center;
-                        color: #9ca3af;
-                        font-size: 14px;
-                    }
-                    @media (max-width: 768px) {
-                        body {
-                            padding: 15px;
-                        }
-                        .container {
-                            padding: 20px;
-                        }
-                        h1 {
-                            font-size: 1.5rem;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>${escapedName}</h1>
-                    <div class="content">${escapedContent}</div>
-                    <div class="footer">
-                        Powered by ZapLink
-                    </div>
-                </div>
-            </body>
-            </html>
-          `;
-          const newWindow = window.open("", "_blank");
-          if (newWindow) {
-            newWindow.document.write(html);
-            newWindow.document.close();
-          }
-        } else if (type === "image") {
-          // Display image
-          const newWindow = window.open("", "_blank");
-          if (newWindow) {
-            newWindow.document.write(`
-              <!DOCTYPE html>
-              <html>
-              <head>
-                <title>${name || "Image"}</title>
-              </head>
-              <body style="margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-                <img src="${data}" alt="${name || "Image"}" style="max-width: 100%; max-height: 100vh;">
-              </body>
-              </html>
-            `);
-            newWindow.document.close();
-          }
-        }
-      }
+      
+      // If password is correct, redirect to the API endpoint with password
+      // The browser will automatically follow the redirect to Cloudinary
+      window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}?password=${encodeURIComponent(password)}`;
+      return;
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       if (
         error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message?.toLowerCase().includes("incorrect password")
+        error.response.status === 401
       ) {
         setPasswordError("Incorrect password. Please try again.");
-      } else if (
-        error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message?.toLowerCase().includes("password required")
-      ) {
-        setPasswordError("Password required.");
+      } else if (error.response && error.response.status === 404) {
+        setError("This link does not exist or has expired.");
+        setErrorType("notfound");
+        toast.error("This link does not exist or has expired.");
       } else if (
         error.response &&
         (error.response.status === 410 || error.response.status === 403)
@@ -289,10 +163,6 @@ export default function ViewZap() {
         setError("View limit exceeded. This file is no longer accessible.");
         setErrorType("viewlimit");
         toast.error("View limit exceeded. This file is no longer accessible.");
-      } else if (error.response && error.response.status === 404) {
-        setError("This link does not exist or has expired.");
-        setErrorType("notfound");
-        toast.error("This link does not exist or has expired.");
       } else {
         setPasswordError(
           "An unexpected error occurred. Please try again later."
