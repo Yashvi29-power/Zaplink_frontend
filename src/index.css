@@ -137,7 +137,7 @@ body {
 /* Content type cards */
 .content-type-card {
   background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
+  border: 2px solid hsl(var(--border));
   border-radius: 16px;
   padding: 24px;
   transition: all 0.2s ease;
@@ -146,6 +146,7 @@ body {
   overflow: hidden;
 }
 
+/* Animated border effect */
 .content-type-card::before {
   content: "";
   position: absolute;
@@ -159,17 +160,22 @@ body {
     transparent 50%
   );
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s ease;
+  border-radius: 14px;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.content-type-card:hover::before {
+.content-type-card:hover::after {
   opacity: 1;
 }
 
 .content-type-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-  border-color: hsl(var(--primary) / 0.3);
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.12),
+    0 0 20px hsl(var(--primary) / 0.2),
+    inset 0 0 20px hsl(var(--primary) / 0.08);
 }
 
 .dark .content-type-card {
@@ -177,7 +183,46 @@ body {
 }
 
 .dark .content-type-card:hover {
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.4),
+    0 0 20px hsl(var(--primary) / 0.25),
+    inset 0 0 20px hsl(var(--primary) / 0.1);
+}
+
+@keyframes animatedBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Focus state for keyboard navigation */
+.content-type-card:focus-visible {
+  outline: none;
+  transform: translateY(-4px);
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.12),
+    0 0 24px hsl(var(--primary) / 0.3);
+}
+
+.content-type-card:focus-visible::before {
+  opacity: 0.65;
+  animation: animatedBorder 1.5s ease-in-out infinite;
+}
+
+.content-type-card:focus-visible::after {
+  opacity: 1;
+}
+
+.dark .content-type-card:focus-visible {
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.4),
+    0 0 24px hsl(var(--primary) / 0.35);
 }
 
 /* Input focus effects */
@@ -305,3 +350,20 @@ body {
 .glow-primary-lg {
   box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
 }
+
+/* ---- Team 125 Enhancement: Animated Step Progress ---- */
+.progress-bar {
+  background-size: 200% 100%;
+  animation: progressShimmer 3s linear infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
