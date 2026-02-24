@@ -271,6 +271,7 @@ export default function UploadPage() {
             qrCode: data.qrCode,
             type: data.type.toUpperCase(),
             name: data.name,
+            deletionToken: data.deletionToken,
           },
         });
       } catch (error: unknown) {
@@ -348,6 +349,7 @@ export default function UploadPage() {
             qrCode: data.qrCode,
             type: data.type.toUpperCase(),
             name: data.name,
+            deletionToken: data.deletionToken,
           },
         });
       } catch (error: unknown) {
@@ -421,6 +423,7 @@ export default function UploadPage() {
           qrCode: data.qrCode,
           type: data.type.toUpperCase(),
           name: data.name,
+          deletionToken: data.deletionToken,
         },
       });
     } catch (error: unknown) {
@@ -495,6 +498,7 @@ export default function UploadPage() {
 
   // Add file size constraints
   const MAX_SIZE_MB = type === "video" ? 100 : 10;
+  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -519,7 +523,26 @@ export default function UploadPage() {
         setQrName(file.name);
       }
     } else {
-      setUploadedFile(null);
+      setUploadedFile(file);
+      if (!qrName) {
+        setQrName(file.name);
+      }
+    }
+  };
+
+  const handleFilesFromUploader = (files: File[]) => {
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.size > MAX_SIZE_BYTES) {
+        toast.error(
+          `${type.charAt(0).toUpperCase() + type.slice(1)} files must be ≤${MAX_SIZE_MB}MB.`
+        );
+        return;
+      }
+      setUploadedFile(file);
+      if (!qrName) {
+        setQrName(file.name);
+      }
     }
   };
 
