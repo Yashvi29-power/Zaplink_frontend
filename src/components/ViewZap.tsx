@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { viewZap, type ApiError } from "../services/api";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -71,18 +71,17 @@ export default function ViewZap() {
       setPasswordRequired(false);
       setPasswordError(null);
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
-        );
+        const response = await viewZap(shortId);
         // If successful, the backend will redirect or serve the file.
-        if (response.data) {
-          window.location.href = response.data.url;
+        if (response) {
+          window.location.href = response.url;
         }
       } catch (err: any) {
-        if (err.response?.status === 401) {
+        const error = err as ApiError;
+        if (error.status === 401) {
           // Check if it's a password required error
           if (
-            err.response.data?.message
+            error.message
               ?.toLowerCase()
               .includes("password required")
           ) {
@@ -90,7 +89,7 @@ export default function ViewZap() {
             setLoading(false);
             return;
           } else if (
-            err.response.data?.message
+            error.message
               ?.toLowerCase()
               .includes("incorrect password")
           ) {
@@ -99,13 +98,13 @@ export default function ViewZap() {
             setLoading(false);
             return;
           }
-        } else if (err.response?.status === 410) {
+        } else if (error.status === 410) {
           setError("This link has expired. The file is no longer available.");
           setErrorType("expired");
           toast.error(
             "This link has expired. The file is no longer available."
           );
-        } else if (err.response?.status === 404) {
+        } else if (error.status === 404) {
           setError("This link does not exist or has expired.");
           setErrorType("notfound");
           toast.error("This link does not exist or has expired.");
@@ -136,23 +135,15 @@ export default function ViewZap() {
     setVerifying(true);
     setPasswordError(null);
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`,
-        {
-          params: { password },
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const response = await viewZap(shortId, password);
 
       // Handle successful response
-      if (response.data) {
-        const { type, url, content, data, name } = response.data;
+      if (response) {
+        const { type, url, content, data, name } = response;
 
         if (type === "redirect" || type === "file") {
           // Redirect to the URL
-          window.location.href = url;
+          window.location.href = url || "";
         } else if (type === "text" || type === "document") {
           // Escape HTML entities for security
           const escapeHtml = (unsafe: string) =>
@@ -162,7 +153,7 @@ export default function ViewZap() {
               .replace(/>/g, "&gt;")
               .replace(/"/g, "&quot;")
               .replace(/'/g, "&#039;");
-          const escapedContent = escapeHtml(content);
+          const escapedContent = escapeHtml(content || "");
           const escapedName = escapeHtml(name || "Untitled");
           // Use the backend's dark theme template
           const html = `
@@ -262,26 +253,24 @@ export default function ViewZap() {
         }
       }
     } catch (err: any) {
+      const error = err as ApiError;
       if (
-        err.response &&
-        err.response.status === 401 &&
-        err.response.data?.message?.toLowerCase().includes("incorrect password")
+        error.status === 401 &&
+        error.message?.toLowerCase().includes("incorrect password")
       ) {
         setPasswordError("Incorrect password. Please try again.");
       } else if (
-        err.response &&
-        err.response.status === 401 &&
-        err.response.data?.message?.toLowerCase().includes("password required")
+        error.status === 401 &&
+        error.message?.toLowerCase().includes("password required")
       ) {
         setPasswordError("Password required.");
       } else if (
-        err.response &&
-        (err.response.status === 410 || err.response.status === 403)
+        error.status === 410 || error.status === 403
       ) {
         setError("View limit exceeded. This file is no longer accessible.");
         setErrorType("viewlimit");
         toast.error("View limit exceeded. This file is no longer accessible.");
-      } else if (err.response && err.response.status === 404) {
+      } else if (error.status === 404) {
         setError("This link does not exist or has expired.");
         setErrorType("notfound");
         toast.error("This link does not exist or has expired.");
