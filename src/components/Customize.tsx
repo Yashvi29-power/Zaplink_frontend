@@ -11,6 +11,7 @@ import {
   Palette,
   Sparkles,
   Check,
+  BarChart3,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "./ui/button";
@@ -382,6 +383,13 @@ export default function CustomizePage() {
                     <Download className="h-5 w-5 mr-2" />
                     Download QR Code
                   </Button>
+                  <Link
+                    to={`/zaps/${state?.shortUrl?.split('/').pop() || ''}/analytics`}
+                    className="h-14 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl focus-ring flex items-center justify-center"
+                  >
+                    <BarChart3 className="h-5 w-5 mr-2" />
+                    View Analytics
+                  </Link>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       onClick={handleCopyLink}
