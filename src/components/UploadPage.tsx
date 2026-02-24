@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Loader2, Shield, Clock, Eye, Zap, FileText, Link, Type as TypeIcon } from "lucide-react";
+import {
+  Loader2,
+  Shield,
+  Clock,
+  Eye,
+  Zap,
+  FileText,
+  Link,
+  Type as TypeIcon,
+} from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
@@ -99,7 +108,7 @@ export default function UploadPage() {
   const initialType = (location.state?.type as FileType) || "pdf";
   const navigate = useNavigate();
   const [qrName, setQrName] = useState(
-    () => sessionStorage.getItem("qrName") || ""
+    () => sessionStorage.getItem("qrName") || "",
   );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [passwordProtect, setPasswordProtect] = useState(false);
@@ -122,10 +131,10 @@ export default function UploadPage() {
     }
   });
   const [viewsValue, setViewsValue] = useState(
-    () => sessionStorage.getItem("viewsValue") || ""
+    () => sessionStorage.getItem("viewsValue") || "",
   );
   const [timeValue, setTimeValue] = useState(
-    () => sessionStorage.getItem("timeValue") || ""
+    () => sessionStorage.getItem("timeValue") || "",
   );
   const [loading, setLoading] = useState(false);
   const [currentStep] = useState(2);
@@ -231,7 +240,7 @@ export default function UploadPage() {
         const hours = parseInt(timeValue);
         if (!isNaN(hours)) {
           expirationTime.setTime(
-            expirationTime.getTime() + hours * 60 * 60 * 1000
+            expirationTime.getTime() + hours * 60 * 60 * 1000,
           );
           formData.append("expiresAt", expirationTime.toISOString());
         }
@@ -241,7 +250,7 @@ export default function UploadPage() {
         setLoading(true);
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`,
-          formData
+          formData,
         );
         const { data } = response.data;
 
@@ -274,9 +283,10 @@ export default function UploadPage() {
           },
         });
       } catch (error: unknown) {
+        console.error("Upload error (file):", error);
         const err = error as AxiosError<{ message: string }>;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message}`
+          `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
         );
       } finally {
         setLoading(false);
@@ -308,7 +318,7 @@ export default function UploadPage() {
         const hours = parseInt(timeValue);
         if (!isNaN(hours)) {
           expirationTime.setTime(
-            expirationTime.getTime() + hours * 60 * 60 * 1000
+            expirationTime.getTime() + hours * 60 * 60 * 1000,
           );
           formData.append("expiresAt", expirationTime.toISOString());
         }
@@ -318,7 +328,7 @@ export default function UploadPage() {
         setLoading(true);
         const response = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`,
-          formData
+          formData,
         );
         const { data } = response.data;
 
@@ -353,7 +363,7 @@ export default function UploadPage() {
       } catch (error: unknown) {
         const err = error as AxiosError<{ message: string }>;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message}`
+          `Upload failed: ${err.response?.data?.message || err.message}`,
         );
       } finally {
         setLoading(false);
@@ -381,7 +391,7 @@ export default function UploadPage() {
       const hours = parseInt(timeValue);
       if (!isNaN(hours)) {
         expirationTime.setTime(
-          expirationTime.getTime() + hours * 60 * 60 * 1000
+          expirationTime.getTime() + hours * 60 * 60 * 1000,
         );
         formData.append("expiresAt", expirationTime.toISOString());
       }
@@ -391,7 +401,7 @@ export default function UploadPage() {
       setLoading(true);
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`,
-        formData
+        formData,
       );
       const { data } = response.data;
 
@@ -424,9 +434,10 @@ export default function UploadPage() {
         },
       });
     } catch (error: unknown) {
+      console.error("Upload error (URL):", error);
       const err = error as AxiosError<{ message: string }>;
       toast.error(
-        `Upload failed: ${err.response?.data?.message || err.message}`
+        `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
       );
     } finally {
       setLoading(false);
@@ -495,14 +506,35 @@ export default function UploadPage() {
 
   // Add file size constraints
   const MAX_SIZE_MB = type === "video" ? 100 : 10;
+  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+  const handleFilesFromUploader = (files: File[]) => {
+    if (files.length === 0) return;
+    const file = files[0];
+
+    if (file.size > MAX_SIZE_BYTES) {
+      toast.error(
+        `${
+          type.charAt(0).toUpperCase() + type.slice(1)
+        } files must be ≤${MAX_SIZE_MB}MB.`,
+      );
+      return;
+    }
+
+    setUploadedFile(file);
+    if (!qrName) {
+      setQrName(file.name);
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${type.charAt(0).toUpperCase() + type.slice(1)
-        } files must be ≤${MAX_SIZE_MB}MB.`
+        `${
+          type.charAt(0).toUpperCase() + type.slice(1)
+        } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       e.target.value = "";
       return;
@@ -512,7 +544,7 @@ export default function UploadPage() {
       // const compressed = await compressPDF(file, 10 * 1024 * 1024);
       // setUploadedFile(compressed);
       toast.info(
-        "PDF compression is not yet implemented. Uploading original file."
+        "PDF compression is not yet implemented. Uploading original file.",
       );
       setUploadedFile(file);
       if (!qrName) {
@@ -570,7 +602,9 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-4xl">
-        <div className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}>
+        <div
+          className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}
+        >
           {/* Step Indicator */}
           <div className="flex items-center justify-between mb-8 sm:mb-12">
             <span className="text-xs sm:text-sm text-primary font-semibold bg-primary/10 px-4 py-2 rounded-full">
@@ -657,9 +691,7 @@ export default function UploadPage() {
           ) : (
             <div className="space-y-6">
               <div className="space-y-4">
-                <Label
-                  className="text-lg font-semibold text-foreground flex items-center gap-3"
-                >
+                <Label className="text-lg font-semibold text-foreground flex items-center gap-3">
                   <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                   <FileText className="h-5 w-5 text-purple-500" />
                   Upload File
@@ -689,7 +721,10 @@ export default function UploadPage() {
                     checked={compressPdf}
                     onCheckedChange={setCompressPdf}
                   />
-                  <label htmlFor="compress-pdf" className="text-sm text-muted-foreground">
+                  <label
+                    htmlFor="compress-pdf"
+                    className="text-sm text-muted-foreground"
+                  >
                     Compress PDF before upload
                   </label>
                 </div>
@@ -839,20 +874,20 @@ export default function UploadPage() {
           {/* Continue to QR Button */}
           {lastQR &&
             lastQRFormHash ===
-            getFormDataHash({
-              qrName,
-              uploadedFile,
-              passwordProtect,
-              password,
-              selfDestruct,
-              destructViews,
-              destructTime,
-              viewsValue,
-              timeValue,
-              urlValue,
-              textValue,
-              type,
-            }) && (
+              getFormDataHash({
+                qrName,
+                uploadedFile,
+                passwordProtect,
+                password,
+                selfDestruct,
+                destructViews,
+                destructTime,
+                viewsValue,
+                timeValue,
+                urlValue,
+                textValue,
+                type,
+              }) && (
               <div className="w-full flex justify-center">
                 <Button
                   className="w-full max-w-md h-14 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] focus-ring"
