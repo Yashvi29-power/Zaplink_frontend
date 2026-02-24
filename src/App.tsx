@@ -19,7 +19,7 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Leetcode from "./pages/Leetcode";
-
+import CommandPalette from "@/components/common/CommandPalette";
 const queryClient = new QueryClient();
 
 // Protected Route wrapper
@@ -149,12 +149,16 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+
           <BrowserRouter
             future={{
               v7_startTransition: true,
               v7_relativeSplatPath: true,
             }}
           >
+            {/* 🔥 Global Command Palette Mounted Here */}
+            <CommandPalette />
+
             <AppRoutes />
           </BrowserRouter>
         </TooltipProvider>
