@@ -117,23 +117,46 @@ export default function CustomizePage() {
     });
     const svgUrl = URL.createObjectURL(svgBlob);
     const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 300;
-      canvas.height = 300;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `zaplink-qr-${state?.name || "code"}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
+
+    // Cleanup function to ensure URL is always revoked
+    const cleanup = () => {
       URL.revokeObjectURL(svgUrl);
-      toast.success("Your QR code has been downloaded successfully.");
     };
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 300;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          cleanup();
+          toast.error(
+            "Failed to create canvas context. Please try again."
+          );
+          return;
+        }
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const pngFile = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `zaplink-qr-${state?.name || "code"}.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+        toast.success("Your QR code has been downloaded successfully.");
+      } catch (error) {
+        toast.error("Failed to generate QR image. Please try again.");
+      } finally {
+        cleanup();
+      }
+    };
+
+    img.onerror = () => {
+      cleanup();
+      toast.error("Failed to load QR image. Please try again.");
+    };
+
     img.src = svgUrl;
   };
 
