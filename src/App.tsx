@@ -5,9 +5,7 @@ import Customize from "./components/Customize";
 import HowItWorks from "./components/HowItWorks";
 import AboutUs from "./components/AboutUs";
 import ViewZap from "./components/ViewZap";
-import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
+import Dashboard from "./components/Dashboard";
 // import UrlShortenerPage from "./components/UrlShortenerPage";
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
@@ -81,29 +79,19 @@ export default function App() {
             </>
           }
         />
+        <Route
+          path="/dashboard"
+          element={
+            <>
+              <Navbar />
+              <Dashboard />
+            </>
+          }
+        />
         <Route path="/zaps/:shortId" element={<ViewZapWrapper />} />
-        {/* // <Route path="/url-shortener" element={<UrlShortenerPage />} /> */}
-        <Route
-          path="/privacy"
-          element={
-            <>
-              <Navbar />
-              <PrivacyPolicy />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/terms"
-          element={
-            <>
-              <Navbar />
-              <Terms />
-              <Footer />
-            </>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
+        {/* <Route path="/privacy" element={<><Navbar /><PrivacyPolicy /><Footer /></>} /> */}
+        {/* <Route path="/terms" element={<><Navbar /><Terms /><Footer /></>} /> */}
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       <ScrollToTop />
       <Analytics />
