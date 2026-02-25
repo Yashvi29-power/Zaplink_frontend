@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -39,7 +39,7 @@ export default function DelayedAccess({
   onUnlocked,
 }: DelayedAccessProps) {
   const [timeRemaining, setTimeRemaining] = useState(() =>
-    calculateTimeRemaining(unlockTime)
+    calculateTimeRemaining(unlockTime),
   );
   const [isUnlocked, setIsUnlocked] = useState(false);
 

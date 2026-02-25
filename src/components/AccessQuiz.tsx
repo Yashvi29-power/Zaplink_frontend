@@ -9,7 +9,7 @@ import { toast } from "sonner";
 interface AccessQuizProps {
   shortId: string;
   question: string;
-  onQuizCorrect: (quizAnswer: string) => void;
+  onQuizCorrect: (zapData: { url?: string }) => void;
   onError?: (error: string) => void;
 }
 
@@ -37,13 +37,13 @@ export default function AccessQuiz({
       // Try to get the file with the quiz answer
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}?quizAnswer=${encodeURIComponent(
-          answer
+          answer,
         )}`,
         {
           headers: {
             Accept: "application/json",
           },
-        }
+        },
       );
       // If successful, the answer was correct
       setIsCorrect(true);

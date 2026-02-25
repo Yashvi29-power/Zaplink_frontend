@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import CopyButton from "./CopyButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -6,6 +7,9 @@ import {
   Download,
   Copy,
   Share2,
+  X,
+  Palette,
+  Sparkles,
   Check,
   Trash2,
   Shield,
@@ -72,7 +76,7 @@ export default function CustomizePage() {
   const [tokenConfirmed, setTokenConfirmed] = useState(false);
   const [animateQR, setAnimateQR] = useState(false);
 
-  // Multi-format export state (PR FEATURE)
+  /* ---- Multi-format export (PR feature) ---- */
   const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
   const [exportResolution, setExportResolution] = useState(1000);
   const [exportQuality, setExportQuality] = useState(85);
@@ -210,48 +214,77 @@ export default function CustomizePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-10 max-w-7xl">
-        <div className="bg-card rounded-3xl p-8 border border-border shadow-lg space-y-10">
-          <div className="grid lg:grid-cols-2 gap-12">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-7xl">
+        <div className="bg-card rounded-3xl shadow-lg p-6 sm:p-8 space-y-8 border border-border">
+          {/* Step Indicator */}
+          <div className="flex items-center justify-between mb-8">
+            <span className="text-xs sm:text-sm text-primary font-semibold bg-primary/10 px-3 py-1 rounded-full animate-pulse">
+              Step 3 of 3
+            </span>
+            <div className="flex-1 mx-4 h-2 bg-muted rounded-full overflow-hidden">
+              <div className="progress-bar h-full w-full"></div>
+            </div>
+            <span className="text-xs sm:text-sm text-primary font-semibold flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              Ready!
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Preview */}
-            <div className="flex justify-center">
-              <div
-                ref={qrRef}
-                style={getFrameStyle()}
-                className={`transition-all duration-300 ${
-                  animateQR ? "scale-110" : "scale-100"
-                }`}
-              >
-                <QRCodeSVG
-                  value={qrValue}
-                  size={240}
-                  bgColor="#fff"
-                  fgColor={fgColor}
-                  level="H"
-                  includeMargin
-                  imageSettings={
-                    logo
-                      ? { src: logo, width: 50, height: 50, excavate: true }
-                      : undefined
-                  }
-                />
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-muted/20 p-10 rounded-3xl border border-border">
+                <div
+                  ref={qrRef}
+                  style={getFrameStyle()}
+                  className={`transition-all duration-300 ${
+                    animateQR ? "scale-110" : "scale-100"
+                  }`}
+                >
+                  <QRCodeSVG
+                    value={qrValue}
+                    size={240}
+                    bgColor="#fff"
+                    fgColor={fgColor}
+                    level="H"
+                    includeMargin
+                    imageSettings={
+                      logo
+                        ? { src: logo, width: 50, height: 50, excavate: true }
+                        : undefined
+                    }
+                  />
+                </div>
               </div>
             </div>
 
             {/* Controls */}
             <div className="space-y-6">
               <Label>Frame Style</Label>
-              <Select value={frameStyle} onValueChange={(v) => setFrameStyle(v as FrameOption)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={frameStyle}
+                onValueChange={(v) => setFrameStyle(v as FrameOption)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {["none", "rounded", "circle", "shadow", "gradient", "border"].map((v) => (
-                    <SelectItem key={v} value={v}>{v}</SelectItem>
-                  ))}
+                  {["none", "rounded", "circle", "shadow", "gradient", "border"].map(
+                    (v) => (
+                      <SelectItem key={v} value={v}>
+                        {v}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
 
               <Label>QR Color</Label>
-              <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} />
+              <input
+                type="color"
+                value={fgColor}
+                onChange={(e) => setFgColor(e.target.value)}
+              />
 
               <Button onClick={() => fileInputRef.current?.click()}>
                 <Upload className="mr-2 h-4 w-4" /> Upload Logo
@@ -264,7 +297,10 @@ export default function CustomizePage() {
                 onChange={handleLogoUpload}
               />
 
-              <FormatSelector value={exportFormat} onChange={setExportFormat} />
+              <FormatSelector
+                value={exportFormat}
+                onChange={setExportFormat}
+              />
               <ResolutionSelector
                 value={exportResolution}
                 onChange={setExportResolution}
@@ -282,7 +318,11 @@ export default function CustomizePage() {
                 {isExporting ? "Exporting..." : "Download"}
               </Button>
 
-              <Button variant="outline" onClick={handleBatchDownload} disabled={isExporting}>
+              <Button
+                variant="outline"
+                onClick={handleBatchDownload}
+                disabled={isExporting}
+              >
                 <PackageOpen className="mr-2 h-4 w-4" />
                 Download All
               </Button>
@@ -307,7 +347,10 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          <Link to="/upload" className="inline-flex items-center gap-2 text-muted-foreground">
+          <Link
+            to="/upload"
+            className="inline-flex items-center gap-2 text-muted-foreground"
+          >
             <ArrowLeft /> Back to Upload
           </Link>
         </div>
