@@ -1,9 +1,11 @@
-/*
+
 import React, { useState } from "react";
+import { saveRecentLink } from "../utils/recentLinks";
+import { type RecentLink } from "../types/recentLink";
+import RecentLinks  from "../components/RecentLinks";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 import { LinkIcon } from "lucide-react";
 
 export default function UrlShortenerPage() {
@@ -14,32 +16,36 @@ export default function UrlShortenerPage() {
     qrCode: string;
   } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResult(null);
-    if (!/^https?:\/\//.test(url)) {
-      toast.error("Please enter a valid http:// or https:// URL");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/url-shortener`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to shorten URL");
-      const data = await res.json();
-      setResult({ shortUrl: data.shortUrl, qrCode: data.qrCode });
-    } catch (err) {
-      toast.error("Failed to shorten URL. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!/^https?:\/\/.*/.test(url)) {
+    toast.error("Please enter a valid http:// or https:// URL");
+    return;
+  }
+
+  setLoading(true);
+
+  const res = await fetch("YOUR_BACKEND_URL", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  const data = await res.json();
+
+  setResult(data.shortUrl); 
+
+  const newLink: RecentLink = {
+    id: Date.now(),
+    url: data.shortUrl,
+    createdAt: new Date().toISOString(),
   };
+
+  saveRecentLink(newLink);
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background">
@@ -90,8 +96,9 @@ export default function UrlShortenerPage() {
             </div>
           </div>
         )}
+        <RecentLinks />
       </div>
     </div>
   );
 }
-*/
+
