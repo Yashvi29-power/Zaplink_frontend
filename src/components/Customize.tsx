@@ -187,9 +187,8 @@ export default function CustomizePage() {
               <div
                 ref={qrRef}
                 style={getFrameStyle()}
-                className={`transition-all duration-300 ${
-                  animateQR ? "scale-110" : "scale-100"
-                }`}
+                className={`transition-all duration-300 ${animateQR ? "scale-110" : "scale-100"
+                  }`}
               >
                 <QRCodeSVG
                   value={qrValue}
