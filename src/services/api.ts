@@ -35,7 +35,9 @@ export interface ApiError {
 }
 
 // Upload Zap (file, URL, or text)
-export const uploadZap = async (formData: FormData): Promise<ZapUploadResponse> => {
+export const uploadZap = async (
+  formData: FormData,
+): Promise<ZapUploadResponse> => {
   try {
     const response = await axios.post(
       `${BACKEND_URL}/api/zaps/upload`,
@@ -44,7 +46,7 @@ export const uploadZap = async (formData: FormData): Promise<ZapUploadResponse> 
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
 
     if (response.data?.data) {
@@ -63,7 +65,7 @@ export const uploadZap = async (formData: FormData): Promise<ZapUploadResponse> 
 // View Zap by shortId (with optional password)
 export const viewZap = async (
   shortId: string,
-  password?: string
+  password?: string,
 ): Promise<ZapViewResponse> => {
   try {
     const config = password
@@ -81,21 +83,24 @@ export const viewZap = async (
 
     const response = await axios.get(
       `${BACKEND_URL}/api/zaps/${shortId}`,
-      config
+      config,
     );
 
     return response.data;
   } catch (error) {
     const err = error as AxiosError<{ message: string }>;
     throw {
-      message: err.response?.data?.message || err.message || "Failed to retrieve Zap",
+      message:
+        err.response?.data?.message || err.message || "Failed to retrieve Zap",
       status: err.response?.status,
     } as ApiError;
   }
 };
 
 // URL Shortener endpoint (if needed)
-export const shortenUrl = async (url: string): Promise<{ shortUrl: string; qrCode?: string }> => {
+export const shortenUrl = async (
+  url: string,
+): Promise<{ shortUrl: string; qrCode?: string }> => {
   try {
     const response = await axios.post(
       `${BACKEND_URL}/api/url-shortener`,
@@ -104,14 +109,15 @@ export const shortenUrl = async (url: string): Promise<{ shortUrl: string; qrCod
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return response.data;
   } catch (error) {
     const err = error as AxiosError<{ message: string }>;
     throw {
-      message: err.response?.data?.message || err.message || "URL shortening failed",
+      message:
+        err.response?.data?.message || err.message || "URL shortening failed",
       status: err.response?.status,
     } as ApiError;
   }
