@@ -635,8 +635,7 @@ export default function UploadPage() {
 
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${
-          type.charAt(0).toUpperCase() + type.slice(1)
+        `${type.charAt(0).toUpperCase() + type.slice(1)
         } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       return;
@@ -653,8 +652,7 @@ export default function UploadPage() {
     if (!file) return;
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${
-          type.charAt(0).toUpperCase() + type.slice(1)
+        `${type.charAt(0).toUpperCase() + type.slice(1)
         } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       e.target.value = "";
@@ -672,22 +670,6 @@ export default function UploadPage() {
         setQrName(file.name);
       }
     } else {
-      setUploadedFile(file);
-      if (!qrName) {
-        setQrName(file.name);
-      }
-    }
-  };
-
-  const handleFilesFromUploader = (files: File[]) => {
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.size > MAX_SIZE_BYTES) {
-        toast.error(
-          `${type.charAt(0).toUpperCase() + type.slice(1)} files must be ≤${MAX_SIZE_MB}MB.`
-        );
-        return;
-      }
       setUploadedFile(file);
       if (!qrName) {
         setQrName(file.name);
@@ -1392,20 +1374,20 @@ export default function UploadPage() {
           {/* Continue to QR Button */}
           {lastQR &&
             lastQRFormHash ===
-              getFormDataHash({
-                qrName,
-                uploadedFile,
-                passwordProtect,
-                password,
-                selfDestruct,
-                destructViews,
-                destructTime,
-                viewsValue,
-                timeValue,
-                urlValue,
-                textValue,
-                type,
-              }) && (
+            getFormDataHash({
+              qrName,
+              uploadedFile,
+              passwordProtect,
+              password,
+              selfDestruct,
+              destructViews,
+              destructTime,
+              viewsValue,
+              timeValue,
+              urlValue,
+              textValue,
+              type,
+            }) && (
               <div className="w-full flex justify-center">
                 <Button
                   className="w-full max-w-md h-14 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] focus-ring"
