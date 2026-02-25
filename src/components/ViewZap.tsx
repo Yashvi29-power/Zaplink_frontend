@@ -133,10 +133,10 @@ export default function ViewZap() {
       setPasswordRequired(false);
       setPasswordError(null);
       try {
-        const response = await axios.get(
+        await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`,
         );
-        
+
         // If metadata check passes, redirect to the API endpoint
         // The browser will automatically follow the redirect from the backend to Cloudinary
         window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`;
@@ -224,9 +224,12 @@ export default function ViewZap() {
     // eslint-disable-next-line
   }, [passwordRequired]);
 
-  const handleQuizCorrect = (ZapData: { url: string }) => {
-    // Redirect to the URL
-    window.location.href = ZapData.url;
+  const handleQuizCorrect = (zapData: { url?: string }) => {
+    if (zapData?.url) {
+      window.location.href = zapData.url;
+      return;
+    }
+    window.location.reload();
   };
 
   const handleFileUnlocked = () => {
@@ -242,19 +245,12 @@ export default function ViewZap() {
       const apiUrl = import.meta.env.VITE_BACKEND_URL
         ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
         : `/api/zaps/${shortId}`;
-      const response = await axios.get(
-        apiUrl,
-      // First verify the password by making a request with it
-      // The backend will return 200 if correct, 401 if wrong
-      const checkResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}/metadata`,
-        {
-          params: { password },
-          headers: {
-            Accept: "application/json",
-          },
+      const response = await axios.get(apiUrl, {
+        params: { password },
+        headers: {
+          Accept: "application/json",
         },
-      );
+      });
       // Handle successful response
       if (response.data) {
         const { type, url, content, data, name } = response.data;

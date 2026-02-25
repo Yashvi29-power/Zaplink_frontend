@@ -3,7 +3,7 @@
  * Provides smart fallbacks and helpful error messages for API calls
  */
 
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios from "axios";
 
 // Create axios instance with smart configuration
 const apiClient = axios.create({
@@ -31,15 +31,13 @@ apiClient.interceptors.response.use(
     if (error.code === "ECONNREFUSED" || error.code === "ERR_NETWORK") {
       const backendUrl =
         import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+      console.error(`❌ Could not connect to backend at ${backendUrl}`);
       console.error(
-        `❌ Could not connect to backend at ${backendUrl}`
-      );
-      console.error(
-        "Please ensure the backend server is running. Check the console logs above for setup instructions."
+        "Please ensure the backend server is running. Check the console logs above for setup instructions.",
       );
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

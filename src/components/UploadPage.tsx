@@ -320,11 +320,8 @@ export default function UploadPage() {
         setLoading(true);
         const apiUrl = import.meta.env.VITE_BACKEND_URL
           ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-          : '/api/zaps/upload';
-        const response = await axios.post(
-          apiUrl,
-          formData
-        );
+          : "/api/zaps/upload";
+        const response = await axios.post(apiUrl, formData);
         const { data } = response.data;
 
         const formHash = getFormDataHash({
@@ -425,11 +422,8 @@ export default function UploadPage() {
         setLoading(true);
         const apiUrl = import.meta.env.VITE_BACKEND_URL
           ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-          : '/api/zaps/upload';
-        const response = await axios.post(
-          apiUrl,
-          formData
-        );
+          : "/api/zaps/upload";
+        const response = await axios.post(apiUrl, formData);
         const { data } = response.data;
 
         const formHash = getFormDataHash({
@@ -525,11 +519,8 @@ export default function UploadPage() {
       setLoading(true);
       const apiUrl = import.meta.env.VITE_BACKEND_URL
         ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-        : '/api/zaps/upload';
-      const response = await axios.post(
-        apiUrl,
-        formData
-      );
+        : "/api/zaps/upload";
+      const response = await axios.post(apiUrl, formData);
       const { data } = response.data;
 
       const formHash = getFormDataHash({
@@ -644,7 +635,8 @@ export default function UploadPage() {
 
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${type.charAt(0).toUpperCase() + type.slice(1)
+        `${
+          type.charAt(0).toUpperCase() + type.slice(1)
         } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       return;
@@ -653,36 +645,6 @@ export default function UploadPage() {
     setUploadedFile(file);
     if (!qrName) {
       setQrName(file.name);
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > MAX_SIZE_BYTES) {
-      toast.error(
-        `${type.charAt(0).toUpperCase() + type.slice(1)
-        } files must be ≤${MAX_SIZE_MB}MB.`,
-      );
-      e.target.value = "";
-      return;
-    }
-    if (type === "pdf" && compressPdf) {
-      // Placeholder: compress PDF client-side
-      // const compressed = await compressPDF(file, 10 * 1024 * 1024);
-      // setUploadedFile(compressed);
-      toast.info(
-        "PDF compression is not yet implemented. Uploading original file.",
-      );
-      setUploadedFile(file);
-      if (!qrName) {
-        setQrName(file.name);
-      }
-    } else {
-      setUploadedFile(file);
-      if (!qrName) {
-        setQrName(file.name);
-      }
     }
   };
 
@@ -716,7 +678,9 @@ export default function UploadPage() {
 
   // Track step completion for animations
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [stepJustCompleted, setStepJustCompleted] = useState<number | null>(null);
+  const [stepJustCompleted, setStepJustCompleted] = useState<number | null>(
+    null,
+  );
 
   // Update completed steps when progress is made
   useEffect(() => {
@@ -727,7 +691,7 @@ export default function UploadPage() {
 
     // Check for newly completed step
     const justCompleted = newCompletedSteps.find(
-      (step) => !completedSteps.includes(step)
+      (step) => !completedSteps.includes(step),
     );
 
     if (justCompleted) {
@@ -736,9 +700,9 @@ export default function UploadPage() {
         justCompleted === 1
           ? "✓ Content added!"
           : justCompleted === 2
-          ? "✓ Name provided!"
-          : "✓ Ready to generate!",
-        { duration: 2000 }
+            ? "✓ Name provided!"
+            : "✓ Ready to generate!",
+        { duration: 2000 },
       );
       setTimeout(() => setStepJustCompleted(null), 2000);
     }
@@ -778,7 +742,9 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-4xl">
-        <div className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}>
+        <div
+          className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}
+        >
           {/* Enhanced Step Indicator with Visual Feedback */}
           <div className="space-y-6">
             {/* Current Step Badge with Animation */}
@@ -808,11 +774,7 @@ export default function UploadPage() {
               {[1, 2, 3].map((step) => {
                 const isCompleted = completedSteps.includes(step);
                 const isActive = currentStep === step;
-                const stepLabels = [
-                  "Add Content",
-                  "Configure",
-                  "Generate",
-                ];
+                const stepLabels = ["Add Content", "Configure", "Generate"];
 
                 return (
                   <div key={step} className="flex-1 flex items-center gap-2">
@@ -824,12 +786,10 @@ export default function UploadPage() {
                             isCompleted
                               ? "bg-primary text-primary-foreground scale-110 shadow-lg"
                               : isActive
-                              ? "bg-primary/30 text-primary scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
-                              : "bg-muted text-muted-foreground"
+                                ? "bg-primary/30 text-primary scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                : "bg-muted text-muted-foreground"
                           } ${
-                            stepJustCompleted === step
-                              ? "animate-bounce"
-                              : ""
+                            stepJustCompleted === step ? "animate-bounce" : ""
                           }`}
                           style={{
                             animation:
@@ -879,17 +839,23 @@ export default function UploadPage() {
             {/* Mobile Step Labels */}
             <div className="flex sm:hidden items-center justify-between px-2 text-xs text-muted-foreground">
               <span
-                className={currentStep >= 1 ? "text-foreground font-medium" : ""}
+                className={
+                  currentStep >= 1 ? "text-foreground font-medium" : ""
+                }
               >
                 Content
               </span>
               <span
-                className={currentStep >= 2 ? "text-foreground font-medium" : ""}
+                className={
+                  currentStep >= 2 ? "text-foreground font-medium" : ""
+                }
               >
                 Configure
               </span>
               <span
-                className={currentStep >= 3 ? "text-foreground font-medium" : ""}
+                className={
+                  currentStep >= 3 ? "text-foreground font-medium" : ""
+                }
               >
                 Generate
               </span>
@@ -907,7 +873,9 @@ export default function UploadPage() {
             <Label className="text-lg font-semibold text-foreground flex items-center gap-3">
               <div
                 className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                  completedSteps.includes(2) ? "bg-primary shadow-lg" : "bg-primary/50"
+                  completedSteps.includes(2)
+                    ? "bg-primary shadow-lg"
+                    : "bg-primary/50"
                 }`}
               ></div>
               Name your QR Code
@@ -941,7 +909,8 @@ export default function UploadPage() {
               className="space-y-4 transition-all duration-500 transform"
               style={{
                 opacity: currentStep >= 1 ? 1 : 0.8,
-                transform: currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
+                transform:
+                  currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
               }}
             >
               <Label
@@ -980,7 +949,8 @@ export default function UploadPage() {
               className="space-y-4 transition-all duration-500 transform"
               style={{
                 opacity: currentStep >= 1 ? 1 : 0.8,
-                transform: currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
+                transform:
+                  currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
               }}
             >
               <Label
@@ -1025,7 +995,8 @@ export default function UploadPage() {
               className="space-y-6 transition-all duration-500 transform"
               style={{
                 opacity: currentStep >= 1 ? 1 : 0.8,
-                transform: currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
+                transform:
+                  currentStep >= 1 ? "translateY(0)" : "translateY(-10px)",
               }}
             >
               <div className="space-y-4">
@@ -1075,7 +1046,8 @@ export default function UploadPage() {
             className="space-y-8 transition-all duration-500 transform"
             style={{
               opacity: currentStep >= 2 ? 1 : 0.5,
-              transform: currentStep >= 2 ? "translateY(0)" : "translateY(10px)",
+              transform:
+                currentStep >= 2 ? "translateY(0)" : "translateY(10px)",
               pointerEvents: currentStep >= 2 ? "auto" : "none",
             }}
           >
@@ -1374,8 +1346,8 @@ export default function UploadPage() {
                 {!hasContent
                   ? "📁 Please add content to continue"
                   : !hasValidName
-                  ? "✏️ Please name your QR code"
-                  : "⚙️ Configure security settings if needed"}
+                    ? "✏️ Please name your QR code"
+                    : "⚙️ Configure security settings if needed"}
               </p>
             )}
           </div>
@@ -1383,20 +1355,20 @@ export default function UploadPage() {
           {/* Continue to QR Button */}
           {lastQR &&
             lastQRFormHash ===
-            getFormDataHash({
-              qrName,
-              uploadedFile,
-              passwordProtect,
-              password,
-              selfDestruct,
-              destructViews,
-              destructTime,
-              viewsValue,
-              timeValue,
-              urlValue,
-              textValue,
-              type,
-            }) && (
+              getFormDataHash({
+                qrName,
+                uploadedFile,
+                passwordProtect,
+                password,
+                selfDestruct,
+                destructViews,
+                destructTime,
+                viewsValue,
+                timeValue,
+                urlValue,
+                textValue,
+                type,
+              }) && (
               <div className="w-full flex justify-center">
                 <Button
                   className="w-full max-w-md h-14 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] focus-ring"
