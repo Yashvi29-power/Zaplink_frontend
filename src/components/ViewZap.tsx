@@ -5,12 +5,8 @@ import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Shield, AlertTriangle, Home, Lock, Loader2 } from "lucide-react";
-<<<<<<< feature/quiz_access
 import AccessQuiz from "./AccessQuiz";
 import DelayedAccess from "./DelayedAccess";
-=======
-import { MockZapView } from "./MockZapView";
->>>>>>> main
 
 function getErrorMessage(errorParam: string | null) {
   if (!errorParam) return null;
@@ -49,7 +45,11 @@ function getErrorIcon(errorParam: string | null) {
     errorParam === "notfound"
   )
     return AlertTriangle;
-  if (errorParam === "incorrect_password" || errorParam === "quiz_required" || errorParam === "quiz_incorrect")
+  if (
+    errorParam === "incorrect_password" ||
+    errorParam === "quiz_required" ||
+    errorParam === "quiz_incorrect"
+  )
     return Lock;
   if (errorParam === "delayed_access") return AlertTriangle;
   return AlertTriangle;
@@ -134,19 +134,24 @@ export default function ViewZap() {
       setPasswordError(null);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
+          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`,
         );
         // If successful, the backend will redirect or serve the file.
         if (response.data) {
           window.location.href = response.data.url;
         }
       } catch (err) {
-        const error = err as AxiosError<{ message: string; error: string; question?: string; unlockTime?: string }>;
-        
+        const error = err as AxiosError<{
+          message: string;
+          error: string;
+          question?: string;
+          unlockTime?: string;
+        }>;
+
         // Handle 423 (Locked/Delayed Access) responses
         if (error.response?.status === 423) {
           const message = error.response.data?.message || "";
-          
+
           // Check if it's a quiz required error
           if (error.response.data?.error === "quiz_required") {
             setQuizRequired(true);
@@ -154,23 +159,25 @@ export default function ViewZap() {
             setLoading(false);
             return;
           }
-          
+
           // Check if it's a delayed access lock
           // Try to extract unlock time from message or use provided unlockTime
           let unlockedAt: Date | null = null;
-          
+
           // First try to use the unlockTime field if available
           if (error.response.data?.unlockTime) {
             unlockedAt = new Date(error.response.data.unlockTime);
           } else {
             // Try to extract ISO datetime from message
             // Pattern: "will be available at 2026-02-24T14:35:59.052Z"
-            const isoMatch = message.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)/);
+            const isoMatch = message.match(
+              /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)/,
+            );
             if (isoMatch) {
               unlockedAt = new Date(isoMatch[1]);
             }
           }
-          
+
           if (unlockedAt) {
             setDelayedAccessLocked(true);
             setUnlockTime(unlockedAt);
@@ -178,7 +185,7 @@ export default function ViewZap() {
             return;
           }
         }
-        
+
         if (error.response?.status === 401) {
           // Check if it's a password required error
           if (
@@ -203,7 +210,7 @@ export default function ViewZap() {
           setError("This link has expired. The file is no longer available.");
           setErrorType("expired");
           toast.error(
-            "This link has expired. The file is no longer available."
+            "This link has expired. The file is no longer available.",
           );
         } else if (error.response?.status === 404) {
           setError("This link does not exist or has expired.");
@@ -231,7 +238,7 @@ export default function ViewZap() {
     // eslint-disable-next-line
   }, [passwordRequired]);
 
-  const handleQuizCorrect = (ZapData: {url: string}) => {
+  const handleQuizCorrect = (ZapData: { url: string }) => {
     // Redirect to the URL
     window.location.href = ZapData.url;
   };
@@ -253,7 +260,7 @@ export default function ViewZap() {
           headers: {
             Accept: "application/json",
           },
-        }
+        },
       );
       // Handle successful response
       if (response.data) {
@@ -381,13 +388,17 @@ export default function ViewZap() {
       if (
         error.response &&
         error.response.status === 401 &&
-        error.response.data?.message?.toLowerCase().includes("incorrect password")
+        error.response.data?.message
+          ?.toLowerCase()
+          .includes("incorrect password")
       ) {
         setPasswordError("Incorrect password. Please try again.");
       } else if (
         error.response &&
         error.response.status === 401 &&
-        error.response.data?.message?.toLowerCase().includes("password required")
+        error.response.data?.message
+          ?.toLowerCase()
+          .includes("password required")
       ) {
         setPasswordError("Password required.");
       } else if (
@@ -403,7 +414,7 @@ export default function ViewZap() {
         toast.error("This link does not exist or has expired.");
       } else {
         setPasswordError(
-          "An unexpected error occurred. Please try again later."
+          "An unexpected error occurred. Please try again later.",
         );
       }
     } finally {
@@ -424,8 +435,7 @@ export default function ViewZap() {
     );
   }
 
-<<<<<<< feature/quiz_access
-  // ── Show Quiz Component 
+  // ── Show Quiz Component
   if (quizRequired && quizQuestion) {
     return (
       <AccessQuiz
@@ -436,16 +446,11 @@ export default function ViewZap() {
     );
   }
 
-  // ── Show Delayed Access Component 
+  // ── Show Delayed Access Component
   if (delayedAccessLocked && unlockTime) {
     return (
       <DelayedAccess unlockTime={unlockTime} onUnlocked={handleFileUnlocked} />
     );
-=======
-  // Show mock view for demo items
-  if (shortId?.startsWith("mock")) {
-    return <MockZapView shortId={shortId} />;
->>>>>>> main
   }
 
   if (passwordRequired) {

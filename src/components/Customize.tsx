@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Upload,
@@ -7,8 +7,14 @@ import {
   Copy,
   Share2,
   Check,
+  Trash2,
+  Shield,
+  AlertTriangle,
+  Eye,
+  EyeOff,
   PackageOpen,
 } from "lucide-react";
+import DeleteZapModal from "./DeleteZapModal";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "./ui/button";
 import {
@@ -27,6 +33,8 @@ import ExportPreview from "./export/ExportPreview";
 import type { ExportFormat } from "../lib/qr-export";
 import { exportQRCode, batchExport } from "../lib/qr-export";
 
+/* ================= TYPES ================= */
+
 type FrameOption =
   | "none"
   | "rounded"
@@ -41,11 +49,16 @@ type CustomizePageState = {
   qrCode: string;
   type: string;
   name: string;
+  deletionToken?: string;
 };
+
+/* ================= COMPONENT ================= */
 
 export default function CustomizePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const state = (location.state as CustomizePageState) || null;
+
   const qrRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,15 +66,21 @@ export default function CustomizePage() {
   const [logo, setLogo] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState("#000000");
   const [copied, setCopied] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
+  const [showToken, setShowToken] = useState(false);
+  const [tokenConfirmed, setTokenConfirmed] = useState(false);
   const [animateQR, setAnimateQR] = useState(false);
 
-  // Multi-format export state
+  // Multi-format export state (PR FEATURE)
   const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
   const [exportResolution, setExportResolution] = useState(1000);
   const [exportQuality, setExportQuality] = useState(85);
   const [isExporting, setIsExporting] = useState(false);
 
   const qrValue = state?.shortUrl || "https://zaplink.example.com/demo123";
+
+  /* ================= HANDLERS ================= */
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,24 +190,37 @@ export default function CustomizePage() {
       toast.error("Sharing not supported");
       return;
     }
-    navigator.share({
-      title: "My QR Code",
-      url: qrValue,
-    });
+    navigator.share({ title: "My QR Code", url: qrValue });
   };
+
+  const handleCopyToken = async () => {
+    if (!state?.deletionToken) return;
+    await navigator.clipboard.writeText(state.deletionToken);
+    setTokenCopied(true);
+    toast.success("Deletion token copied");
+    setTimeout(() => setTokenCopied(false), 2000);
+  };
+
+  const handleDeleteSuccess = () => {
+    toast.success("Redirecting to home...");
+    setTimeout(() => navigate("/"), 1000);
+  };
+
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-10 max-w-7xl">
         <div className="bg-card rounded-3xl p-8 border border-border shadow-lg space-y-10">
-          {/* Preview */}
           <div className="grid lg:grid-cols-2 gap-12">
+            {/* Preview */}
             <div className="flex justify-center">
               <div
                 ref={qrRef}
                 style={getFrameStyle()}
-                className={`transition-all duration-300 ${animateQR ? "scale-110" : "scale-100"
-                  }`}
+                className={`transition-all duration-300 ${
+                  animateQR ? "scale-110" : "scale-100"
+                }`}
               >
                 <QRCodeSVG
                   value={qrValue}
@@ -210,30 +242,19 @@ export default function CustomizePage() {
             <div className="space-y-6">
               <Label>Frame Style</Label>
               <Select value={frameStyle} onValueChange={(v) => setFrameStyle(v as FrameOption)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["none", "rounded", "circle", "shadow", "gradient", "border"].map(
-                    (v) => (
-                      <SelectItem key={v} value={v}>
-                        {v}
-                      </SelectItem>
-                    )
-                  )}
+                  {["none", "rounded", "circle", "shadow", "gradient", "border"].map((v) => (
+                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
               <Label>QR Color</Label>
-              <input
-                type="color"
-                value={fgColor}
-                onChange={(e) => setFgColor(e.target.value)}
-              />
+              <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} />
 
               <Button onClick={() => fileInputRef.current?.click()}>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Logo
+                <Upload className="mr-2 h-4 w-4" /> Upload Logo
               </Button>
               <input
                 ref={fileInputRef}
@@ -244,13 +265,11 @@ export default function CustomizePage() {
               />
 
               <FormatSelector value={exportFormat} onChange={setExportFormat} />
-
               <ResolutionSelector
                 value={exportResolution}
                 onChange={setExportResolution}
                 disabled={exportFormat === "svg" || exportFormat === "pdf"}
               />
-
               <ExportPreview
                 format={exportFormat}
                 resolution={exportResolution}
@@ -270,14 +289,21 @@ export default function CustomizePage() {
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={handleCopyLink}>
-                  {copied ? <Check /> : <Copy />}
-                  Copy Link
+                  {copied ? <Check /> : <Copy />} Copy Link
                 </Button>
                 <Button variant="outline" onClick={handleShare}>
-                  <Share2 />
-                  Share
+                  <Share2 /> Share
                 </Button>
               </div>
+
+              {state?.deletionToken && (
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteModalOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Zap
+                </Button>
+              )}
             </div>
           </div>
 
@@ -285,6 +311,15 @@ export default function CustomizePage() {
             <ArrowLeft /> Back to Upload
           </Link>
         </div>
+
+        {state?.zapId && (
+          <DeleteZapModal
+            open={deleteModalOpen}
+            onOpenChange={setDeleteModalOpen}
+            zapId={state.zapId}
+            onDeleteSuccess={handleDeleteSuccess}
+          />
+        )}
       </main>
     </div>
   );
