@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Loader2, Shield, Clock, Eye, Zap, FileText, Link, Type as TypeIcon, X } from "lucide-react";
+import {
+  Loader2,
+  Shield,
+  Clock,
+  Eye,
+  Zap,
+  FileText,
+  Link,
+  Type as TypeIcon,
+  X,
+} from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
@@ -198,7 +208,10 @@ export default function UploadPage() {
   }, [timeValue]);
 
   useEffect(() => {
-    sessionStorage.setItem("enableAccessQuiz", JSON.stringify(enableAccessQuiz));
+    sessionStorage.setItem(
+      "enableAccessQuiz",
+      JSON.stringify(enableAccessQuiz),
+    );
     if (!enableAccessQuiz) {
       setQuizQuestion("");
       setQuizAnswer("");
@@ -216,7 +229,7 @@ export default function UploadPage() {
   useEffect(() => {
     sessionStorage.setItem(
       "enableDelayedAccess",
-      JSON.stringify(enableDelayedAccess)
+      JSON.stringify(enableDelayedAccess),
     );
     if (!enableDelayedAccess) {
       setDelayedAccessValue("");
@@ -1109,7 +1122,7 @@ export default function UploadPage() {
                         value={delayedAccessType}
                         onChange={(e) =>
                           setDelayedAccessType(
-                            e.target.value as "minutes" | "hours" | "days"
+                            e.target.value as "minutes" | "hours" | "days",
                           )
                         }
                         className="w-full h-12 px-4 rounded-xl border border-border bg-background text-foreground text-base focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
