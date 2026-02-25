@@ -6,6 +6,9 @@ import Customize from "./components/Customize";
 import HowItWorks from "./components/HowItWorks";
 import AboutUs from "./components/AboutUs";
 import ViewZap from "./components/ViewZap";
+import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 // import UrlShortenerPage from "./components/UrlShortenerPage";
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
@@ -19,6 +22,7 @@ function ViewZapWrapper() {
     <>
       <Navbar hideNavOptions={!!passwordRequired} />
       <ViewZap />
+      <Footer />
     </>
   );
 }
@@ -38,6 +42,7 @@ export default function App() {
             <>
               <Navbar />
               <Home />
+              <Footer />
             </>
           }
         />
@@ -47,6 +52,7 @@ export default function App() {
             <>
               <Navbar />
               <UploadPage />
+              <Footer />
             </>
           }
         />
@@ -56,6 +62,7 @@ export default function App() {
             <>
               <Navbar />
               <Customize />
+              <Footer />
             </>
           }
         />
@@ -65,6 +72,7 @@ export default function App() {
             <>
               <Navbar />
               <HowItWorks />
+              <Footer />
             </>
           }
         />
@@ -74,12 +82,35 @@ export default function App() {
             <>
               <Navbar />
               <AboutUs />
+              <Footer />
             </>
           }
         />
         <Route path="/zaps/:shortId" element={<ViewZapWrapper />} />
         {/* // <Route path="/url-shortener" element={<UrlShortenerPage />} /> */}
+        <Route
+          path="/privacy"
+          element={
+            <>
+              <Navbar />
+              <PrivacyPolicy />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <>
+              <Navbar />
+              <Terms />
+              <Footer />
+            </>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
+      <ScrollToTop />
       <Analytics />
     </>
   );

@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Upload, Loader2, X, Shield, Clock, Eye, Zap, FileText, Link, Type as TypeIcon } from "lucide-react";
+import {
+  Loader2,
+  Shield,
+  Clock,
+  Eye,
+  Zap,
+  FileText,
+  Link,
+  Type as TypeIcon,
+} from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
@@ -8,6 +17,7 @@ import { Button } from "./ui/button";
 import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
 import { Switch } from "./ui/switch";
+import FileUpload from "./FileUpload";
 
 type FileType =
   | "image"
@@ -98,32 +108,49 @@ export default function UploadPage() {
   const initialType = (location.state?.type as FileType) || "pdf";
   const navigate = useNavigate();
   const [qrName, setQrName] = useState(
-    () => sessionStorage.getItem("qrName") || ""
+    () => sessionStorage.getItem("qrName") || "",
   );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [passwordProtect, setPasswordProtect] = useState(false);
   const [password, setPassword] = useState("");
   const [selfDestruct, setSelfDestruct] = useState(false);
-  const [destructViews, setDestructViews] = useState(() =>
-    JSON.parse(sessionStorage.getItem("destructViews") || "false")
-  );
-  const [destructTime, setDestructTime] = useState(() =>
-    JSON.parse(sessionStorage.getItem("destructTime") || "false")
-  );
+  const [destructViews, setDestructViews] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("destructViews") || "false");
+    } catch (error) {
+      console.warn("Failed to parse destructViews from sessionStorage:", error);
+      return false;
+    }
+  });
+  const [destructTime, setDestructTime] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("destructTime") || "false");
+    } catch (error) {
+      console.warn("Failed to parse destructTime from sessionStorage:", error);
+      return false;
+    }
+  });
   const [viewsValue, setViewsValue] = useState(
-    () => sessionStorage.getItem("viewsValue") || ""
+    () => sessionStorage.getItem("viewsValue") || "",
   );
   const [timeValue, setTimeValue] = useState(
-    () => sessionStorage.getItem("timeValue") || ""
+    () => sessionStorage.getItem("timeValue") || "",
   );
   const [loading, setLoading] = useState(false);
+  const [currentStep] = useState(2);
   const [type, setType] = useState<FileType>(initialType);
   const [urlValue, setUrlValue] = useState("");
   const [textValue, setTextValue] = useState("");
   const [compressPdf, setCompressPdf] = useState(false);
   const [lastQR, setLastQR] = useState(() => {
-    const data = sessionStorage.getItem("lastQR");
-    return data ? JSON.parse(data) : null;
+    try {
+      const data = sessionStorage.getItem("lastQR");
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.warn("Failed to parse lastQR from sessionStorage:", error);
+      sessionStorage.removeItem("lastQR");
+      return null;
+    }
   });
   const [lastQRFormHash, setLastQRFormHash] = useState(() => {
     const data = sessionStorage.getItem("lastQRFormHash");
@@ -213,7 +240,7 @@ export default function UploadPage() {
         const hours = parseInt(timeValue);
         if (!isNaN(hours)) {
           expirationTime.setTime(
-            expirationTime.getTime() + hours * 60 * 60 * 1000
+            expirationTime.getTime() + hours * 60 * 60 * 1000,
           );
           formData.append("expiresAt", expirationTime.toISOString());
         }
@@ -259,9 +286,10 @@ export default function UploadPage() {
           },
         });
       } catch (error: unknown) {
+        console.error("Upload error (file):", error);
         const err = error as AxiosError<{ message: string }>;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message}`
+          `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
         );
       } finally {
         setLoading(false);
@@ -293,7 +321,7 @@ export default function UploadPage() {
         const hours = parseInt(timeValue);
         if (!isNaN(hours)) {
           expirationTime.setTime(
-            expirationTime.getTime() + hours * 60 * 60 * 1000
+            expirationTime.getTime() + hours * 60 * 60 * 1000,
           );
           formData.append("expiresAt", expirationTime.toISOString());
         }
@@ -341,7 +369,7 @@ export default function UploadPage() {
       } catch (error: unknown) {
         const err = error as AxiosError<{ message: string }>;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message}`
+          `Upload failed: ${err.response?.data?.message || err.message}`,
         );
       } finally {
         setLoading(false);
@@ -369,7 +397,7 @@ export default function UploadPage() {
       const hours = parseInt(timeValue);
       if (!isNaN(hours)) {
         expirationTime.setTime(
-          expirationTime.getTime() + hours * 60 * 60 * 1000
+          expirationTime.getTime() + hours * 60 * 60 * 1000,
         );
         formData.append("expiresAt", expirationTime.toISOString());
       }
@@ -415,9 +443,10 @@ export default function UploadPage() {
         },
       });
     } catch (error: unknown) {
+      console.error("Upload error (URL):", error);
       const err = error as AxiosError<{ message: string }>;
       toast.error(
-        `Upload failed: ${err.response?.data?.message || err.message}`
+        `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
       );
     } finally {
       setLoading(false);
@@ -459,6 +488,7 @@ export default function UploadPage() {
     urlValue,
     textValue,
     type,
+    lastQRFormHash,
   ]);
 
   const handlePasswordProtectChange = (checked: boolean | "indeterminate") => {
@@ -487,17 +517,23 @@ export default function UploadPage() {
   const MAX_SIZE_MB = type === "video" ? 100 : 10;
   const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-  const validateFileType = (file: File) => {
-    if (
-      type === "url" ||
-      type === "text" ||
-      type === "document" ||
-      type === "presentation"
-    )
-      return true;
-    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-    const allowed = TYPE_EXTENSIONS[type] || [];
-    return allowed.length === 0 || allowed.includes(ext);
+  const handleFilesFromUploader = (files: File[]) => {
+    if (files.length === 0) return;
+    const file = files[0];
+
+    if (file.size > MAX_SIZE_BYTES) {
+      toast.error(
+        `${
+          type.charAt(0).toUpperCase() + type.slice(1)
+        } files must be ≤${MAX_SIZE_MB}MB.`,
+      );
+      return;
+    }
+
+    setUploadedFile(file);
+    if (!qrName) {
+      setQrName(file.name);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -507,7 +543,7 @@ export default function UploadPage() {
       toast.error(
         `${
           type.charAt(0).toUpperCase() + type.slice(1)
-        } files must be ≤${MAX_SIZE_MB}MB.`
+        } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       e.target.value = "";
       return;
@@ -517,37 +553,19 @@ export default function UploadPage() {
       // const compressed = await compressPDF(file, 10 * 1024 * 1024);
       // setUploadedFile(compressed);
       toast.info(
-        "PDF compression is not yet implemented. Uploading original file."
+        "PDF compression is not yet implemented. Uploading original file.",
       );
       setUploadedFile(file);
-      return;
+      if (!qrName) {
+        setQrName(file.name);
+      }
+    } else {
+      setUploadedFile(null);
     }
-    if (type === "text") {
-      toast.error(
-        "Text type does not require file upload. Please use the text input below."
-      );
-      e.target.value = "";
-      return;
-    }
-    if (type === "document" || type === "presentation") {
-      // Allow these types to proceed with file upload
-    } else if (!validateFileType(file)) {
-      toast.error(TYPE_MESSAGES[type] || "Invalid file type.");
-      e.target.value = "";
-      return;
-    }
-    setUploadedFile(file);
-    setQrName(qrName ? qrName : file.name);
-    toast.success(`File "${file.name}" selected successfully!`);
   };
 
-  const handleRemoveFile = () => {
-    setUploadedFile(null);
-    const fileInput = document.getElementById("file") as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = "";
-    }
-    toast.info("File removed");
+  const handleUploadError = (error: string) => {
+    toast.error(error);
   };
 
   const handleQrNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -560,8 +578,8 @@ export default function UploadPage() {
     (type === "url"
       ? urlValue.trim()
       : type === "text"
-      ? textValue.trim()
-      : uploadedFile) &&
+        ? textValue.trim()
+        : uploadedFile) &&
     (!passwordProtect || password.trim()) &&
     (!selfDestruct ||
       (destructViews && viewsValue.trim()) ||
@@ -569,48 +587,43 @@ export default function UploadPage() {
 
   // Add this useEffect after state declarations
   useEffect(() => {
-    if (lastQR && lastQRFormHash) {
-      // Only prefill if form is at initial state (e.g., no file, no name, etc)
-      const isInitial =
-        !qrName &&
-        !uploadedFile &&
-        !passwordProtect &&
-        !password &&
-        !selfDestruct &&
-        !destructViews &&
-        !destructTime &&
-        !viewsValue &&
-        !timeValue &&
-        !urlValue &&
-        !textValue;
-      if (isInitial) {
-        setQrName(lastQR.name || "");
-        setPasswordProtect(!!lastQR.password);
-        setPassword(lastQR.password || "");
-        setSelfDestruct(!!lastQR.selfDestruct);
-        setDestructViews(!!lastQR.viewLimit);
-        setDestructTime(!!lastQR.expiresAt);
-        setViewsValue(lastQR.viewLimit ? String(lastQR.viewLimit) : "");
-        setTimeValue(lastQR.expiresAt ? String(lastQR.expiresAt) : "");
-        setUrlValue(lastQR.originalUrl || "");
-        setTextValue(lastQR.textContent || "");
-        setType(lastQR.type ? lastQR.type.toLowerCase() : type);
-        // Note: File cannot be restored for security reasons, user must reselect if needed
-      }
+    // check for last zap in local storage
+    const lastZapStr = localStorage.getItem("lastZap");
+    if (lastZapStr) {
+      const lastQR = JSON.parse(lastZapStr);
+      // Only restore if current state is empty
+      // We check the refs or assume it's mount time
+      setQrName(lastQR.name || "");
+      setPasswordProtect(!!lastQR.password);
+      setPassword(lastQR.password || "");
+      setSelfDestruct(!!lastQR.selfDestruct);
+      setDestructViews(!!lastQR.viewLimit);
+      setDestructTime(!!lastQR.expiresAt);
+      setViewsValue(lastQR.viewLimit ? String(lastQR.viewLimit) : "");
+      setTimeValue(lastQR.expiresAt ? String(lastQR.expiresAt) : "");
+      setUrlValue(lastQR.originalUrl || "");
+      setTextValue(lastQR.textContent || "");
+      setType(lastQR.type ? lastQR.type.toLowerCase() : "file");
+      // Note: File cannot be restored for security reasons
     }
-  }, []);
+  }, []); // Run only once on mount to restore previous session state
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-4xl">
-        <div className="bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border">
+        <div
+          className={`bg-card rounded-3xl shadow-lg p-6 sm:p-10 space-y-8 sm:space-y-12 border border-border transition-all duration-500 ease-out animate-fade-in`}
+        >
           {/* Step Indicator */}
           <div className="flex items-center justify-between mb-8 sm:mb-12">
             <span className="text-xs sm:text-sm text-primary font-semibold bg-primary/10 px-4 py-2 rounded-full">
-              Step 2 of 3
+              Step {currentStep} of 3
             </span>
             <div className="flex-1 mx-4 sm:mx-6 h-2 bg-muted rounded-full overflow-hidden">
-              <div className="progress-bar h-full w-2/3"></div>
+              <div
+                className="progress-bar h-full transition-all duration-500 ease-in-out bg-gradient-to-r from-primary via-primary/80 to-primary shadow-md"
+                style={{ width: `${(currentStep / 3) * 100}%` }}
+              ></div>
             </div>
             <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
               Customize
@@ -687,31 +700,26 @@ export default function UploadPage() {
           ) : (
             <div className="space-y-6">
               <div className="space-y-4">
-                <Label
-                  htmlFor="file"
-                  className="text-lg font-semibold text-foreground flex items-center gap-3"
-                >
+                <Label className="text-lg font-semibold text-foreground flex items-center gap-3">
                   <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
                   <FileText className="h-5 w-5 text-purple-500" />
                   Upload File
                 </Label>
-                <div className="relative">
-                  <Input
-                    id="file"
-                    type="file"
-                    onChange={handleFileChange}
-                    accept={TYPE_EXTENSIONS[type].join(",")}
-                    className="cursor-pointer h-14 rounded-xl border-border bg-background file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 transition-all duration-200 focus-ring"
-                  />
-                </div>
+
+                <FileUpload
+                  key={type}
+                  maxFiles={1}
+                  maxSizeInMB={MAX_SIZE_MB}
+                  acceptedFileTypes={TYPE_EXTENSIONS[type]}
+                  onUpload={handleFilesFromUploader}
+                  onError={handleUploadError}
+                  multiple={false}
+                />
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground pl-6">
                   {TYPE_MESSAGES[type]}
-                </p>
-                <p className="text-xs text-muted-foreground pl-6">
-                  Max size: {type === "video" ? "100MB" : "10MB"}
                 </p>
               </div>
 
@@ -722,34 +730,12 @@ export default function UploadPage() {
                     checked={compressPdf}
                     onCheckedChange={setCompressPdf}
                   />
-                  <label htmlFor="compress-pdf" className="text-sm text-muted-foreground">
+                  <label
+                    htmlFor="compress-pdf"
+                    className="text-sm text-muted-foreground"
+                  >
                     Compress PDF before upload
                   </label>
-                </div>
-              )}
-
-              {uploadedFile && (
-                <div className="p-6 border border-border rounded-xl bg-muted/30">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-xl">
-                      <Upload className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground text-lg">
-                        {uploadedFile.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(uploadedFile.size / 1024).toFixed(2)} KB
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleRemoveFile}
-                      className="p-3 hover:bg-destructive/10 rounded-xl transition-colors duration-200 group focus-ring"
-                      title="Remove file"
-                    >
-                      <X className="h-5 w-5 text-muted-foreground group-hover:text-destructive" />
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
