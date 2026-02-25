@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import UrlShortenerPage from "./components/UrlShortenerPage";
+import Dashboard from "./components/Dashboard";
+// import UrlShortenerPage from "./components/UrlShortenerPage";
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -93,26 +95,18 @@ export default function App() {
           }
         />
         <Route
-          path="/privacy"
+          path="/dashboard"
           element={
             <>
               <Navbar />
-              <PrivacyPolicy />
-              <Footer />
+              <Dashboard />
             </>
           }
         />
-        <Route
-          path="/terms"
-          element={
-            <>
-              <Navbar />
-              <Terms />
-              <Footer />
-            </>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
+        <Route path="/zaps/:shortId" element={<ViewZapWrapper />} />
+        {/* <Route path="/privacy" element={<><Navbar /><PrivacyPolicy /><Footer /></>} /> */}
+        {/* <Route path="/terms" element={<><Navbar /><Terms /><Footer /></>} /> */}
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       <ScrollToTop />
       <Analytics />

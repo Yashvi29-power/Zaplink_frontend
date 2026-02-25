@@ -1,9 +1,12 @@
+
 import React, { useState } from "react";
+import { saveRecentLink } from "../utils/recentLinks";
+import { type RecentLink } from "../types/recentLink";
+import RecentLinks  from "../components/RecentLinks";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import { LinkIcon, Copy, Check } from "lucide-react";
-import axios from "axios";
+import { LinkIcon } from "lucide-react";
 
 export default function UrlShortenerPage() {
   const [url, setUrl] = useState("");
@@ -15,53 +18,36 @@ export default function UrlShortenerPage() {
     originalUrl: string;
   } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResult(null);
-    setCopied(false);
-    
-    // Basic URL validation - allow any non-empty string
-    const trimmedUrl = url.trim();
-    if (!trimmedUrl || trimmedUrl.length === 0) {
-      toast.error("Please enter a URL");
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/shorten`,
-        { url: trimmedUrl }
-      );
-      
-      // Success - extract the data from the response
-      setResult({ 
-        shortUrl: res.data.data.shortUrl, 
-        qrCode: res.data.data.qrCode,
-        originalUrl: res.data.data.originalUrl
-      });
-      toast.success("URL shortened successfully!");
-    } catch (err: any) {
-      console.error("URL shortening error:", err);
-      const errorMessage = err.response?.data?.message || "Failed to shorten URL. Please try again.";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!/^https?:\/\/.*/.test(url)) {
+    toast.error("Please enter a valid http:// or https:// URL");
+    return;
+  }
+
+  setLoading(true);
+
+  const res = await fetch("YOUR_BACKEND_URL", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  const data = await res.json();
+
+  setResult(data.shortUrl); 
+
+  const newLink: RecentLink = {
+    id: Date.now(),
+    url: data.shortUrl,
+    createdAt: new Date().toISOString(),
   };
 
-  const copyToClipboard = async () => {
-    if (result?.shortUrl) {
-      try {
-        await navigator.clipboard.writeText(result.shortUrl);
-        setCopied(true);
-        toast.success("Copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
-      } catch (_err) {
-        toast.error("Failed to copy");
-      }
-    }
-  };
+  saveRecentLink(newLink);
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-8">
@@ -140,6 +126,7 @@ export default function UrlShortenerPage() {
             </div>
           </div>
         )}
+        <RecentLinks />
       </div>
     </div>
   );
