@@ -16,7 +16,7 @@ import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import axios, { AxiosError } from "axios";
+import { uploadZap, type ApiError } from "../services/api";
 import { Switch } from "./ui/switch";
 import FileUpload from "./FileUpload";
 
@@ -318,11 +318,7 @@ export default function UploadPage() {
 
       try {
         setLoading(true);
-        const apiUrl = import.meta.env.VITE_BACKEND_URL
-          ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-          : "/api/zaps/upload";
-        const response = await axios.post(apiUrl, formData);
-        const { data } = response.data;
+        const data = await uploadZap(formData);
 
         const formHash = getFormDataHash({
           qrName,
@@ -356,10 +352,9 @@ export default function UploadPage() {
           },
         });
       } catch (error: unknown) {
-        console.error("Upload error (file):", error);
-        const err = error as AxiosError<{ message: string }>;
+        const err = error as ApiError;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
+          `Upload failed: ${err.message}`
         );
       } finally {
         setLoading(false);
@@ -420,11 +415,7 @@ export default function UploadPage() {
 
       try {
         setLoading(true);
-        const apiUrl = import.meta.env.VITE_BACKEND_URL
-          ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-          : "/api/zaps/upload";
-        const response = await axios.post(apiUrl, formData);
-        const { data } = response.data;
+        const data = await uploadZap(formData);
 
         const formHash = getFormDataHash({
           qrName,
@@ -458,9 +449,9 @@ export default function UploadPage() {
           },
         });
       } catch (error: unknown) {
-        const err = error as AxiosError<{ message: string }>;
+        const err = error as ApiError;
         toast.error(
-          `Upload failed: ${err.response?.data?.message || err.message}`,
+          `Upload failed: ${err.message}`
         );
       } finally {
         setLoading(false);
@@ -517,11 +508,7 @@ export default function UploadPage() {
 
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_BACKEND_URL
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`
-        : "/api/zaps/upload";
-      const response = await axios.post(apiUrl, formData);
-      const { data } = response.data;
+      const data = await uploadZap(formData);
 
       const formHash = getFormDataHash({
         qrName,
@@ -555,10 +542,9 @@ export default function UploadPage() {
         },
       });
     } catch (error: unknown) {
-      console.error("Upload error (URL):", error);
-      const err = error as AxiosError<{ message: string }>;
+      const err = error as ApiError;
       toast.error(
-        `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
+        `Upload failed: ${err.message}`
       );
     } finally {
       setLoading(false);
