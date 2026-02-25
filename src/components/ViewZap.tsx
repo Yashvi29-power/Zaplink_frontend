@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import axios, { AxiosError } from "axios";
+import { viewZap, type ApiError } from "../services/api";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -133,72 +133,40 @@ export default function ViewZap() {
       setPasswordRequired(false);
       setPasswordError(null);
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`,
-        );
-        
-        // If metadata check passes, redirect to the API endpoint
-        // The browser will automatically follow the redirect from the backend to Cloudinary
-        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`;
-        return;
-      } catch (err) {
-        const error = err as AxiosError<{
-          message: string;
-          error: string;
-          question?: string;
-          unlockTime?: string;
-        }>;
-
-        // Handle 423 (Locked/Delayed Access) responses
-        if (error.response?.status === 423) {
-          const message = error.response.data?.message || "";
-
-          // Check if it's a quiz required error
-          if (error.response.data?.error === "quiz_required") {
-            setQuizRequired(true);
-            setQuizQuestion(error.response.data?.question || null);
-            setLoading(false);
-            return;
-          }
-
-          // Check if it's a delayed access lock
-          // Try to extract unlock time from message or use provided unlockTime
-          let unlockedAt: Date | null = null;
-
-          // First try to use the unlockTime field if available
-          if (error.response.data?.unlockTime) {
-            unlockedAt = new Date(error.response.data.unlockTime);
-          } else {
-            // Try to extract ISO datetime from message
-            // Pattern: "will be available at 2026-02-24T14:35:59.052Z"
-            const isoMatch = message.match(
-              /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z?)/,
-            );
-            if (isoMatch) {
-              unlockedAt = new Date(isoMatch[1]);
-            }
-          }
-
-          if (unlockedAt) {
-            setDelayedAccessLocked(true);
-            setUnlockTime(unlockedAt);
-            setLoading(false);
-            return;
-          }
+        const response = await viewZap(shortId);
+        // If successful, the backend will redirect or serve the file.
+        if (response) {
+          window.location.href = response.url;
         }
-
-        if (error.response?.status === 401) {
-          // Password required
-          setPasswordRequired(true);
-          setLoading(false);
-          return;
-        } else if (error.response?.status === 410) {
+      } catch (err: any) {
+        const error = err as ApiError;
+        if (error.status === 401) {
+          // Check if it's a password required error
+          if (
+            error.message
+              ?.toLowerCase()
+              .includes("password required")
+          ) {
+            setPasswordRequired(true);
+            setLoading(false);
+            return;
+          } else if (
+            error.message
+              ?.toLowerCase()
+              .includes("incorrect password")
+          ) {
+            setPasswordError("Incorrect password. Please try again.");
+            setPasswordRequired(true);
+            setLoading(false);
+            return;
+          }
+        } else if (error.status === 410) {
           setError("This link has expired. The file is no longer available.");
           setErrorType("expired");
           toast.error(
             "This link has expired. The file is no longer available.",
           );
-        } else if (error.response?.status === 404) {
+        } else if (error.status === 404) {
           setError("This link does not exist or has expired.");
           setErrorType("notfound");
           toast.error("This link does not exist or has expired.");
@@ -239,25 +207,11 @@ export default function ViewZap() {
     setVerifying(true);
     setPasswordError(null);
     try {
-      const apiUrl = import.meta.env.VITE_BACKEND_URL
-        ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
-        : `/api/zaps/${shortId}`;
-      const response = await axios.get(
-        apiUrl,
-      // First verify the password by making a request with it
-      // The backend will return 200 if correct, 401 if wrong
-      const checkResponse = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}/metadata`,
-        {
-          params: { password },
-          headers: {
-            Accept: "application/json",
-          },
-        },
-      );
+      const response = await viewZap(shortId, password);
+
       // Handle successful response
-      if (response.data) {
-        const { type, url, content, data, name } = response.data;
+      if (response) {
+        const { type, url, content, data, name } = response;
 
         // Escape HTML entities for security
         const escapeHtml = (unsafe: string) =>
@@ -276,9 +230,17 @@ export default function ViewZap() {
           type === "audio"
         ) {
           // Redirect to the URL
-          window.location.href = url;
+          window.location.href = url || "";
         } else if (type === "text" || type === "document") {
-          const escapedContent = escapeHtml(content);
+          // Escape HTML entities for security
+          const escapeHtml = (unsafe: string) =>
+            unsafe
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          const escapedContent = escapeHtml(content || "");
           const escapedName = escapeHtml(name || "Untitled");
           // Use the backend's dark theme template
           const html = `
@@ -383,31 +345,28 @@ export default function ViewZap() {
           }
         }
       }
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
+    } catch (err: any) {
+      const error = err as ApiError;
       if (
-        error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message
-          ?.toLowerCase()
-          .includes("incorrect password")
+        error.status === 401 &&
+        error.message?.toLowerCase().includes("incorrect password")
       ) {
         setPasswordError("Incorrect password. Please try again.");
       } else if (
-        error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message
-          ?.toLowerCase()
-          .includes("password required")
+        error.status === 401 &&
+        error.message?.toLowerCase().includes("password required")
       ) {
         setPasswordError("Password required.");
       } else if (
-        error.response &&
-        (error.response.status === 410 || error.response.status === 403)
+        error.status === 410 || error.status === 403
       ) {
         setError("View limit exceeded. This file is no longer accessible.");
         setErrorType("viewlimit");
         toast.error("View limit exceeded. This file is no longer accessible.");
+      } else if (error.status === 404) {
+        setError("This link does not exist or has expired.");
+        setErrorType("notfound");
+        toast.error("This link does not exist or has expired.");
       } else {
         setPasswordError(
           "An unexpected error occurred. Please try again later.",
