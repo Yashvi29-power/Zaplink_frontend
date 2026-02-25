@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2, Shield, Clock, Eye, Zap, FileText, Link, Type as TypeIcon, X } from "lucide-react";
-import {
-  Loader2,
-  Shield,
-  Clock,
-  Eye,
-  Zap,
-  FileText,
-  Link,
-  Type as TypeIcon,
-} from "lucide-react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";

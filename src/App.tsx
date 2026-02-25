@@ -89,28 +89,9 @@ export default function App() {
           }
         />
         <Route path="/zaps/:shortId" element={<ViewZapWrapper />} />
-        {/* // <Route path="/url-shortener" element={<UrlShortenerPage />} /> */}
-        <Route
-          path="/privacy"
-          element={
-            <>
-              <Navbar />
-              <PrivacyPolicy />
-              <Footer />
-            </>
-          }
-        />
-        <Route
-          path="/terms"
-          element={
-            <>
-              <Navbar />
-              <Terms />
-              <Footer />
-            </>
-          }
-        />
-        <Route path="*" element={<NotFound />} />
+        {/* <Route path="/privacy" element={<><Navbar /><PrivacyPolicy /><Footer /></>} /> */}
+        {/* <Route path="/terms" element={<><Navbar /><Terms /><Footer /></>} /> */}
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
       <ScrollToTop />
       <Analytics />
