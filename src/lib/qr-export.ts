@@ -210,7 +210,7 @@ export function estimateFileSize(
     let sizeKB: number;
     switch (format) {
         case "svg":
-            sizeKB = 3 + Math.random() * 4; // SVGs are tiny ~3-7KB
+            sizeKB = 5; // SVGs are tiny ~3-7KB
             break;
         case "pdf":
             sizeKB = 100 + (resolution / 1000) * 60;

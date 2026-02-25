@@ -366,13 +366,11 @@ export default function CustomizePage() {
                   onChange={setExportFormat}
                 />
 
-                {exportFormat !== "svg" && (
-                  <ResolutionSelector
-                    value={exportResolution}
-                    onChange={setExportResolution}
-                    disabled={exportFormat === "pdf"}
-                  />
-                )}
+                <ResolutionSelector
+                  value={exportResolution}
+                  onChange={setExportResolution}
+                  disabled={exportFormat === "svg" || exportFormat === "pdf"}
+                />
 
                 <ExportPreview
                   format={exportFormat}

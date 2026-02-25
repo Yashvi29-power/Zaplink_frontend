@@ -26,36 +26,42 @@ export default function ExportPreview({
 
     return (
         <div className="space-y-4">
-            {/* Quality Slider — only for lossy formats */}
-            {isLossy && (
-                <div className="space-y-3">
-                    <Label className="text-base font-semibold text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                        <SlidersHorizontal className="h-4 w-4" />
-                        Quality
-                    </Label>
-                    <div className="flex items-center gap-4">
-                        <Slider
-                            min={10}
-                            max={100}
-                            step={5}
-                            value={quality}
-                            onChange={(e) => onQualityChange(Number(e.target.value))}
-                            className="flex-1"
-                        />
-                        <span className="text-sm font-mono font-semibold text-primary w-12 text-right">
-                            {quality}%
+            {/* Quality Slider — available for lossy formats, shown disabled for lossless */}
+            <div className="space-y-3">
+                <Label className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Quality
+                    {!isLossy && (
+                        <span className="ml-auto text-xs font-normal bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                            Lossless
                         </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                        {quality >= 80
+                    )}
+                </Label>
+                <div className={`flex items-center gap-4 ${!isLossy ? 'opacity-50' : ''}`}>
+                    <Slider
+                        min={10}
+                        max={100}
+                        step={5}
+                        value={isLossy ? quality : 100}
+                        onChange={(e) => onQualityChange(Number(e.target.value))}
+                        disabled={!isLossy}
+                        className="flex-1"
+                    />
+                    <span className="text-sm font-mono font-semibold text-primary w-12 text-right">
+                        {isLossy ? `${quality}%` : '100%'}
+                    </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    {!isLossy
+                        ? `${info.label} is lossless — maximum quality preserved`
+                        : quality >= 80
                             ? "High quality — larger file"
                             : quality >= 50
                                 ? "Balanced quality and size"
                                 : "Small file — lower quality"}
-                    </p>
-                </div>
-            )}
+                </p>
+            </div>
 
             {/* File Size Preview */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border">
