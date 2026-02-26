@@ -20,7 +20,8 @@ export interface Challenge {
   ownerId?: string;
   members: ChallengeMember[];
   isActive: boolean;
-  isPrivate?: boolean;
+  /** Backend field — matches ChallengeVisibility enum: "PUBLIC" | "PRIVATE" */
+  visibility?: 'PUBLIC' | 'PRIVATE';
 }
 
 export interface ChallengeInvite {

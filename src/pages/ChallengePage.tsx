@@ -200,7 +200,7 @@ const ChallengePage: React.FC = () => {
                 </Button>
               )}
 
-            {challenge.isPrivate && challenge.ownerId === user?.id && (
+            {challenge.visibility === "PRIVATE" && challenge.ownerId === user?.id && (
               <Button
                 variant="outline"
                 size="sm"
@@ -212,7 +212,7 @@ const ChallengePage: React.FC = () => {
               </Button>
             )}
 
-            {!isMember && !challenge.isPrivate && (
+            {!isMember && challenge.visibility !== "PRIVATE" && (
               <Button
                 variant="outline"
                 size="sm"
@@ -277,7 +277,7 @@ const ChallengePage: React.FC = () => {
       {/* Invite Users Dialog — open prop guards access; always mounted to avoid async teardown issues */}
       <InviteUserDialog
         open={
-          Boolean(challenge.isPrivate) &&
+          challenge.visibility === "PRIVATE" &&
           challenge.ownerId === user?.id &&
           isInviteDialogOpen
         }

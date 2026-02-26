@@ -74,7 +74,8 @@ interface ChallengeResponse {
   endDate: string;
   status: string;
   ownerId: string;
-  isPrivate?: boolean;
+  /** Backend returns visibility: "PUBLIC" | "PRIVATE" — not isPrivate */
+  visibility?: 'PUBLIC' | 'PRIVATE';
   createdAt: string;
   members?: any[];
 }
@@ -202,6 +203,12 @@ export const challengeApi = {
 
 // ============================================================================
 // INVITE APIs
+// NOTE: These endpoints are pending backend implementation.
+// Backend spec (challenge.routes.js) does not yet include invite routes.
+// The UI is ready; calls will gracefully fail (try/catch) until the backend
+// adds: POST /api/challenges/:id/invite, GET /api/invites,
+//        POST /api/challenges/:id/invite/accept|reject
+//        GET  /api/users/search
 // ============================================================================
 export const inviteApi = {
   // POST /api/challenge/:id/invite
