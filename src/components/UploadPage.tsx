@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Loader2,
@@ -157,6 +157,10 @@ export default function UploadPage() {
     return data || null;
   });
 
+  // REAL-TIME UPLOAD STATE & REFS
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Persist state to sessionStorage
   useEffect(() => {
     sessionStorage.setItem("qrName", qrName);
@@ -212,7 +216,17 @@ export default function UploadPage() {
     setUrlValue("");
     setTextValue("");
     setCompressPdf(false);
+    setUploadProgress(0); // Reset progress when type changes
   }, [type]);
+
+  // Handle manual upload cancellation
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setUploadedFile(null);
+    setUploadProgress(0);
+  };
 
   // After successful QR generation, store QR and form hash
   const handleGenerateAndContinue = async () => {
@@ -273,6 +287,7 @@ export default function UploadPage() {
         setLastQR({ ...data });
         setLastQRFormHash(formHash);
 
+        toast.success("QR Code generated successfully!");
         navigate("/customize", {
           state: {
             zapId: data.zapId,
@@ -283,7 +298,7 @@ export default function UploadPage() {
           },
         });
       } catch (error: unknown) {
-        console.error("Upload error (file):", error);
+        console.error("Upload error (URL):", error);
         const err = error as AxiosError<{ message: string }>;
         toast.error(
           `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
@@ -351,6 +366,7 @@ export default function UploadPage() {
         setLastQR({ ...data });
         setLastQRFormHash(formHash);
 
+        toast.success("QR Code generated successfully!");
         navigate("/customize", {
           state: {
             zapId: data.zapId,
@@ -371,6 +387,7 @@ export default function UploadPage() {
       return;
     }
 
+    // FILE UPLOAD BRANCH
     if (!uploadedFile) {
       toast.error("Please select a file to upload");
       return;
@@ -399,10 +416,26 @@ export default function UploadPage() {
 
     try {
       setLoading(true);
+      setUploadProgress(0);
+      abortControllerRef.current = new AbortController();
+
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/zaps/upload`,
         formData,
+        {
+          signal: abortControllerRef.current.signal,
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total,
+              );
+              setUploadProgress(percentCompleted);
+              console.log("Upload Progress:", percentCompleted); // Add this to debug in console
+            }
+          },
+        },
       );
+
       const { data } = response.data;
 
       const formHash = getFormDataHash({
@@ -424,6 +457,7 @@ export default function UploadPage() {
       setLastQR({ ...data });
       setLastQRFormHash(formHash);
 
+      toast.success("QR Code generated successfully!");
       navigate("/customize", {
         state: {
           zapId: data.zapId,
@@ -434,13 +468,18 @@ export default function UploadPage() {
         },
       });
     } catch (error: unknown) {
-      console.error("Upload error (URL):", error);
+      if (axios.isCancel(error)) {
+        toast.info("Upload canceled by user");
+        return;
+      }
+      console.error("Upload error (file):", error);
       const err = error as AxiosError<{ message: string }>;
       toast.error(
         `Upload failed: ${err.response?.data?.message || err.message || "Network error"}`,
       );
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -705,6 +744,9 @@ export default function UploadPage() {
                   onUpload={handleFilesFromUploader}
                   onError={handleUploadError}
                   multiple={false}
+                  uploadProgress={uploadProgress}
+                  isUploading={loading && !!uploadedFile}
+                  onCancel={handleCancelUpload}
                 />
               </div>
 
@@ -860,7 +902,9 @@ export default function UploadPage() {
               {loading ? (
                 <>
                   <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                  Generating QR Code...
+                  {uploadProgress > 0 && !!uploadedFile
+                    ? `Uploading... ${uploadProgress}%`
+                    : "Generating QR Code..."}
                 </>
               ) : (
                 <>
