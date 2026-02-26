@@ -9,6 +9,7 @@ import {
   Clock,
   Loader2,
   PlayCircle,
+  UserPlus,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
+import MembersList from "@/components/challenge/MembersList";
+import InviteUserDialog from "@/components/challenge/InviteUserDialog";
 import ProgressChart from "@/components/dashboard/ProgressChart";
 import { cn } from "@/lib/utils";
 import { challengeApi, dashboardApi } from "@/lib/api";
@@ -41,6 +44,7 @@ const ChallengePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) loadChallengeData();
@@ -198,8 +202,19 @@ const ChallengePage: React.FC = () => {
                   Activate
                 </Button>
               )}
+            {challenge.visibility === "PRIVATE" && challenge.ownerId === user?.id && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setIsInviteDialogOpen(true)}
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite Users
+              </Button>
+            )}
 
-            {!isMember ? (
+            {!isMember && challenge.visibility !== "PRIVATE" ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -264,6 +279,19 @@ const ChallengePage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Invite Users Dialog — open prop guards access; always mounted to avoid async teardown issues */}
+      <InviteUserDialog
+        open={
+          challenge.visibility === "PRIVATE" &&
+          challenge.ownerId === user?.id &&
+          isInviteDialogOpen
+        }
+        onOpenChange={setIsInviteDialogOpen}
+        challengeId={challenge.id}
+        challengeName={challenge.name}
+        existingMemberIds={leaderboard.map((m) => m.userId || m.id)}
+      />
     </Layout>
   );
 };

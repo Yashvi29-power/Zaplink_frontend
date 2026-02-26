@@ -1,10 +1,12 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import {
+import type {
   User,
   Challenge,
   Stats,
   ActivityData,
-  ChartData
+  ChartData,
+  ChallengeInvite,
+  UserSearchResult,
 } from "@/types";
 
 // API Base URL - Change this to your backend URL
@@ -68,7 +70,6 @@ export interface LoginResponse {
 
 export interface RegisterResponse extends LoginResponse { }
 
-export interface DashboardResponse {
   summary: {
     totalChallenges: number;
     activeChallenges: number;
@@ -185,6 +186,60 @@ export const challengeApi = {
         status,
       }
     );
+    return response.data;
+  },
+};
+
+// ============================================================================
+// INVITE APIs
+// NOTE: These endpoints are pending backend implementation.
+// Backend spec (challenge.routes.js) does not yet include invite routes.
+// The UI is ready; calls will gracefully fail (try/catch) until the backend
+// adds: POST /api/challenges/:id/invite, GET /api/invites,
+//        POST /api/challenges/:id/invite/accept|reject
+//        GET  /api/users/search
+// ============================================================================
+export const inviteApi = {
+  // POST /api/challenge/:id/invite
+  sendInvite: async (challengeId: string, userId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite`,
+      { userId }
+    );
+    return response.data;
+  },
+
+  getMyInvites: async () => {
+    const response = await api.get<ApiResponse<ChallengeInvite[]>>("/api/invites");
+    return response.data;
+  },
+
+  // POST /api/challenge/:id/invite/accept
+  acceptInvite: async (challengeId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite/accept`
+    );
+    return response.data;
+  },
+
+  // POST /api/challenge/:id/invite/reject
+  rejectInvite: async (challengeId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite/reject`
+    );
+    return response.data;
+  },
+};
+
+// ============================================================================
+// USER APIs
+// ============================================================================
+export const userApi = {
+  searchUsers: async (query: string, signal?: AbortSignal) => {
+    const response = await api.get<ApiResponse<UserSearchResult[]>>("/api/users/search", {
+      params: { q: query },
+      signal,
+    });
     return response.data;
   },
 };
