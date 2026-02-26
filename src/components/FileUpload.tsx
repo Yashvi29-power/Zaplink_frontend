@@ -721,6 +721,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     removeFile(fileState.id);
+                    toast.info("File removed"); // Added toast
                   }}
                   className="p-2 hover:bg-destructive/10 rounded-lg transition-colors duration-200 group focus-ring flex-shrink-0"
                   aria-label={`Remove ${fileState.file.name}`}
