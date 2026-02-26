@@ -1,5 +1,13 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import type { ChallengeInvite, UserSearchResult } from "@/types";
+import type {
+  User,
+  Challenge,
+  Stats,
+  ActivityData,
+  ChartData,
+  ChallengeInvite,
+  UserSearchResult,
+} from "@/types";
 
 // API Base URL - Change this to your backend URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -42,14 +50,14 @@ api.interceptors.response.use(
 );
 
 // API Response types
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data?: T;
   error?: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   user: {
     id: string;
     email: string;
@@ -60,38 +68,19 @@ interface LoginResponse {
   token: string;
 }
 
-interface RegisterResponse extends LoginResponse {}
+export interface RegisterResponse extends LoginResponse { }
 
-interface ChallengeResponse {
-  id: string;
-  name: string;
-  description: string;
-  minSubmissionsPerDay: number;
-  difficultyFilter: string[] | null;
-  uniqueProblemConstraint: boolean;
-  penaltyAmount: number;
-  startDate: string;
-  endDate: string;
-  status: string;
-  ownerId: string;
-  /** Backend returns visibility: "PUBLIC" | "PRIVATE" — not isPrivate */
-  visibility?: 'PUBLIC' | 'PRIVATE';
-  createdAt: string;
-  members?: any[];
-}
-
-interface DashboardResponse {
   summary: {
     totalChallenges: number;
     activeChallenges: number;
     completedChallenges: number;
     totalPenalties: number;
   };
-  activeChallenges: any[];
+  activeChallenges: Challenge[];
   recentActivity: any[];
 }
 
-interface TodayStatusResponse {
+export interface TodayStatusResponse {
   date: string;
   challenges: any[];
   summary: {
@@ -104,7 +93,7 @@ interface TodayStatusResponse {
 
 // ============================================================================
 // AUTH APIs
-// ============================================================================
+// ============================================================================// API implementations
 export const authApi = {
   login: async (emailOrUsername: string, password: string) => {
     const response = await api.post<ApiResponse<LoginResponse>>(
@@ -161,7 +150,7 @@ export const challengeApi = {
     endDate: string;
     visibility: string;
   }) => {
-    const response = await api.post<ApiResponse<ChallengeResponse>>(
+    const response = await api.post<ApiResponse<Challenge>>(
       "/api/challenges",
       data
     );
@@ -169,7 +158,7 @@ export const challengeApi = {
   },
 
   getAll: async (params?: { status?: string; owned?: boolean }) => {
-    const response = await api.get<ApiResponse<ChallengeResponse[]>>(
+    const response = await api.get<ApiResponse<Challenge[]>>(
       "/api/challenges",
       { params }
     );
@@ -177,7 +166,7 @@ export const challengeApi = {
   },
 
   getById: async (id: string) => {
-    const response = await api.get<ApiResponse<ChallengeResponse>>(
+    const response = await api.get<ApiResponse<Challenge>>(
       `/api/challenges/${id}`
     );
     return response.data;
@@ -191,7 +180,7 @@ export const challengeApi = {
   },
 
   updateStatus: async (id: string, status: string) => {
-    const response = await api.patch<ApiResponse<ChallengeResponse>>(
+    const response = await api.patch<ApiResponse<Challenge>>(
       `/api/challenges/${id}/status`,
       {
         status,
