@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { uploadZap, type ApiError } from "../services/api";
 import { Switch } from "./ui/switch";
 import FileUpload from "./FileUpload";
+import { useUnsavedChanges } from "../hooks/useUnsavedChanges";
+import UnsavedChangesDialog from "./UnsavedChangesDialog";
 
 type FileType =
   | "image"
@@ -246,6 +248,23 @@ export default function UploadPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  // ── Unsaved changes protection ──────────────────────────────────────
+  const isDirty =
+    qrName.trim() !== "" ||
+    uploadedFile !== null ||
+    urlValue.trim() !== "" ||
+    textValue.trim() !== "" ||
+    passwordProtect ||
+    password.trim() !== "" ||
+    selfDestruct ||
+    enableAccessQuiz ||
+    quizQuestion.trim() !== "" ||
+    quizAnswer.trim() !== "" ||
+    enableDelayedAccess ||
+    delayedAccessValue.trim() !== "";
+
+  const { isBlocked, proceed, reset } = useUnsavedChanges(isDirty);
 
   // Reset form state when file type changes
   useEffect(() => {
@@ -621,8 +640,7 @@ export default function UploadPage() {
 
     if (file.size > MAX_SIZE_BYTES) {
       toast.error(
-        `${
-          type.charAt(0).toUpperCase() + type.slice(1)
+        `${type.charAt(0).toUpperCase() + type.slice(1)
         } files must be ≤${MAX_SIZE_MB}MB.`,
       );
       return;
@@ -748,9 +766,8 @@ export default function UploadPage() {
               <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 {currentStep === 3 ? "Ready!" : "Customize"}
                 <Zap
-                  className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-300 ${
-                    currentStep === 3 ? "text-primary animate-pulse" : ""
-                  }`}
+                  className={`h-3 w-3 sm:h-4 sm:w-4 transition-all duration-300 ${currentStep === 3 ? "text-primary animate-pulse" : ""
+                    }`}
                 />
               </span>
             </div>
@@ -768,15 +785,13 @@ export default function UploadPage() {
                       {/* Step Circle */}
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-500 transform ${
-                            isCompleted
-                              ? "bg-primary text-primary-foreground scale-110 shadow-lg"
-                              : isActive
-                                ? "bg-primary/30 text-primary scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
-                                : "bg-muted text-muted-foreground"
-                          } ${
-                            stepJustCompleted === step ? "animate-bounce" : ""
-                          }`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-500 transform ${isCompleted
+                            ? "bg-primary text-primary-foreground scale-110 shadow-lg"
+                            : isActive
+                              ? "bg-primary/30 text-primary scale-105 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                              : "bg-muted text-muted-foreground"
+                            } ${stepJustCompleted === step ? "animate-bounce" : ""
+                            }`}
                           style={{
                             animation:
                               stepJustCompleted === step
@@ -792,11 +807,10 @@ export default function UploadPage() {
                         </div>
                         {/* Step Label - Hidden on mobile for space */}
                         <span
-                          className={`hidden sm:block text-xs font-medium transition-all duration-300 ${
-                            isCompleted || isActive
-                              ? "text-foreground"
-                              : "text-muted-foreground"
-                          }`}
+                          className={`hidden sm:block text-xs font-medium transition-all duration-300 ${isCompleted || isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                            }`}
                         >
                           {stepLabels[step - 1]}
                         </span>
@@ -805,11 +819,10 @@ export default function UploadPage() {
                       {step < 3 && (
                         <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-700 ease-out ${
-                              isCompleted
-                                ? "bg-gradient-to-r from-primary via-primary/90 to-primary shadow-sm"
-                                : "bg-transparent"
-                            }`}
+                            className={`h-full transition-all duration-700 ease-out ${isCompleted
+                              ? "bg-gradient-to-r from-primary via-primary/90 to-primary shadow-sm"
+                              : "bg-transparent"
+                              }`}
                             style={{
                               width: isCompleted ? "100%" : "0%",
                             }}
@@ -858,11 +871,10 @@ export default function UploadPage() {
           >
             <Label className="text-lg font-semibold text-foreground flex items-center gap-3">
               <div
-                className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                  completedSteps.includes(2)
-                    ? "bg-primary shadow-lg"
-                    : "bg-primary/50"
-                }`}
+                className={`w-3 h-3 rounded-full transition-all duration-500 ${completedSteps.includes(2)
+                  ? "bg-primary shadow-lg"
+                  : "bg-primary/50"
+                  }`}
               ></div>
               Name your QR Code
               {completedSteps.includes(2) && (
@@ -1302,11 +1314,10 @@ export default function UploadPage() {
             <Button
               onClick={handleGenerateAndContinue}
               disabled={!canGenerate || loading}
-              className={`w-full h-16 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus-ring ${
-                canGenerate && !loading
-                  ? "animate-pulse-subtle ring-2 ring-primary/30"
-                  : ""
-              }`}
+              className={`w-full h-16 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold text-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 focus-ring ${canGenerate && !loading
+                ? "animate-pulse-subtle ring-2 ring-primary/30"
+                : ""
+                }`}
             >
               {loading ? (
                 <>
@@ -1341,20 +1352,20 @@ export default function UploadPage() {
           {/* Continue to QR Button */}
           {lastQR &&
             lastQRFormHash ===
-              getFormDataHash({
-                qrName,
-                uploadedFile,
-                passwordProtect,
-                password,
-                selfDestruct,
-                destructViews,
-                destructTime,
-                viewsValue,
-                timeValue,
-                urlValue,
-                textValue,
-                type,
-              }) && (
+            getFormDataHash({
+              qrName,
+              uploadedFile,
+              passwordProtect,
+              password,
+              selfDestruct,
+              destructViews,
+              destructTime,
+              viewsValue,
+              timeValue,
+              urlValue,
+              textValue,
+              type,
+            }) && (
               <div className="w-full flex justify-center">
                 <Button
                   className="w-full max-w-md h-14 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] focus-ring"
@@ -1366,6 +1377,13 @@ export default function UploadPage() {
             )}
         </div>
       </main>
+
+      {/* Unsaved changes confirmation dialog */}
+      <UnsavedChangesDialog
+        open={isBlocked}
+        onCancel={reset}
+        onConfirm={proceed}
+      />
     </div>
   );
 }
