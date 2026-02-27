@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useNavigate } from "react-router-dom";
+import SecuritySection from "./SecuritySection";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -117,7 +118,7 @@ export default function Home() {
                 }
                 className="group content-type-card text-left focus-ring"
               >
-                <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6">
+                <div className="relative z-20 flex flex-col items-center gap-4 sm:gap-6">
                   <div
                     className={cn(
                       "p-4 sm:p-5 rounded-2xl bg-gradient-to-br transition-all duration-300 shadow-lg",
@@ -183,8 +184,12 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Security & Privacy Section */}
+      </main>
+      <SecuritySection />
+      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
         {/* CTA Section */}
-        <div className="text-center mt-16 sm:mt-24">
+        <div className="text-center mt-16 sm:mt-24 pb-16 sm:pb-24">
           <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-3xl p-8 sm:p-12 border border-primary/20">
             <div className="flex items-center justify-center gap-3 mb-6">
               <Clock className="h-6 w-6 text-primary" />
@@ -206,7 +211,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
