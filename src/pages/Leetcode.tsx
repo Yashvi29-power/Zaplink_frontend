@@ -1,4 +1,5 @@
 import Layout from "@/components/layout/Layout";
+import { User, Database, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, leetcodeApi } from "@/lib/api";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -101,11 +102,15 @@ const Leetcode = () => {
         {!user?.leetcodeUsername && (
           <EmptyState
             icon={Settings}
+            icon={User}
             title="No LeetCode username"
             description="Set your LeetCode username in settings to fetch profile data."
             action={{
               label: "Go to Settings",
               onClick: () => { navigate('/settings') },
+              onClick: () => {
+                navigate("/settings");
+              },
             }}
           />
         )}
@@ -116,6 +121,11 @@ const Leetcode = () => {
             title="No profile data"
             description="Make sure you've stored a LeetCode session in the backend."
             action={{ label: "Go to Settings", onClick: () => { navigate('/settings') } }}
+
+            action={{
+              label: "Go to Settings",
+              onClick: () => { navigate('/settings') }
+            }}
           />
         )}
 
@@ -222,7 +232,11 @@ function TestConnectionButton({ username }: { username: string }) {
     try {
       const res = await leetcodeApi.testConnection(username);
       if (res.success) {
-        toast({ title: "Connection OK", description: res.message || "LeetCode connection successful" });
+        toast({
+          title: "Connection OK",
+          description: res.message || "LeetCode connection successful",
+          variant: "success"
+        });
       } else {
         toast({ title: "Connection failed", description: res.message || res.error || "Failed to connect" });
       }
