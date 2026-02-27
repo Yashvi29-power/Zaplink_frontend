@@ -27,6 +27,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { ValidatedInput } from "@/components/common/ValidatedInput";
 import { useDelayedNavigate } from "@/hooks/use-delayed-navigate";
 
+
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();

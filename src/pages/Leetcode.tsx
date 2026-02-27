@@ -1,6 +1,10 @@
 import Layout from "@/components/layout/Layout";
+
+import { useAuth } from "@/contexts/src/pages/src/AuthContext";
+
 import { User, Database, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
 import { authApi, leetcodeApi } from "@/lib/api";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { User, LeetCodeProfile } from "@/types";
