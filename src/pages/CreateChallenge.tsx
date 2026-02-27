@@ -107,17 +107,26 @@ const CreateChallenge: React.FC = () => {
       }
       // If 'any', leave empty array
 
+      // Sanitize and validate all user inputs
+      const sanitizedName = DOMPurify.sanitize(name.trim());
+      const sanitizedDescription = DOMPurify.sanitize(description.trim());
+      const sanitizedDailyTarget = parseInt(dailyTarget);
+      const sanitizedPenaltyAmount = parseInt(penaltyAmount);
+      const sanitizedStartDate = new Date(startDate).toISOString();
+      const sanitizedEndDate = new Date(endDate).toISOString();
+      const sanitizedVisibility = visibility as "PUBLIC" | "PRIVATE";
+
       const response = await challengeApi.create({
-        name,
+        name: sanitizedName,
         description:
-          description || `${name} - Solve ${dailyTarget} problem(s) daily`,
-        minSubmissionsPerDay: parseInt(dailyTarget),
+          sanitizedDescription || `${sanitizedName} - Solve ${sanitizedDailyTarget} problem(s) daily`,
+        minSubmissionsPerDay: sanitizedDailyTarget,
         difficultyFilter,
         uniqueProblemConstraint: true,
-        penaltyAmount: parseInt(penaltyAmount),
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
-        visibility: visibility as "PUBLIC" | "PRIVATE",
+        penaltyAmount: sanitizedPenaltyAmount,
+        startDate: sanitizedStartDate,
+        endDate: sanitizedEndDate,
+        visibility: sanitizedVisibility,
       });
 
       if (response.success) {
@@ -146,10 +155,9 @@ const CreateChallenge: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Back Button */}
-        <Button variant="ghost" size="sm" asChild className="gap-2">
+        <Button variant="ghost" asChild className="mb-4">
           <Link to="/">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Link>
         </Button>
@@ -315,7 +323,6 @@ const CreateChallenge: React.FC = () => {
                   Public challenges are visible to all users. Private challenges are only visible to the owner and invited members.
                 </p>
               </div>
-
 
               <div className="flex gap-3 pt-4">
                 <Button
