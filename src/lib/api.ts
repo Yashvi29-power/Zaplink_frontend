@@ -1,10 +1,15 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import {
+import type {
   User,
   Challenge,
   Stats,
   ActivityData,
-  ChartData
+  ChartData,
+  ChallengeInvite,
+  UserSearchResult,
+  DashboardResponse,
+  LeaderboardEntry,
+  LeetCodeProfile,
 } from "@/types";
 
 // API Base URL - Change this to your backend URL
@@ -66,28 +71,54 @@ export interface LoginResponse {
   token: string;
 }
 
-export interface RegisterResponse extends LoginResponse { }
+export type RegisterResponse = LoginResponse;
 
-export interface DashboardResponse {
-  summary: {
-    totalChallenges: number;
-    activeChallenges: number;
-    completedChallenges: number;
-    totalPenalties: number;
-  };
-  activeChallenges: Challenge[];
-  recentActivity: any[];
+export interface LeaderboardMember {
+  userId: string;
+  userName?: string;
+  username?: string;
+  totalPenalty?: number;
+  status?: string;
+  avatar?: string;
+}
+
+export interface ChallengeResponse {
+  id: string;
+  name: string;
+  description: string;
+  minSubmissionsPerDay: number;
+  difficultyFilter: string[] | null;
+  uniqueProblemConstraint: boolean;
+  penaltyAmount: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  ownerId: string;
+  createdAt: string;
+  members?: LeaderboardMember[];
 }
 
 export interface TodayStatusResponse {
   date: string;
-  challenges: any[];
+  challenges: unknown[];
   summary: {
     totalChallenges: number;
     completed: number;
     pending: number;
     failed: number;
   };
+}
+
+export interface DashboardStats {
+  currentStreak: number;
+  longestStreak: number;
+  totalPenalties: number;
+  totalSubmissions: number;
+}
+
+export interface SessionStatus {
+  isValid: boolean;
+  expiresAt: string;
 }
 
 // ============================================================================
@@ -124,12 +155,12 @@ export const authApi = {
   },
 
   getProfile: async () => {
-    const response = await api.get<ApiResponse<any>>("/api/auth/profile");
+    const response = await api.get<ApiResponse<User>>("/api/auth/profile");
     return response.data;
   },
 
   updateProfile: async (data: { leetcodeUsername?: string }) => {
-    const response = await api.put<ApiResponse<any>>("/api/auth/profile", data);
+    const response = await api.put<ApiResponse<User>>("/api/auth/profile", data);
     return response.data;
   },
 };
@@ -172,7 +203,7 @@ export const challengeApi = {
   },
 
   join: async (id: string) => {
-    const response = await api.post<ApiResponse<any>>(
+    const response = await api.post<ApiResponse<null>>(
       `/api/challenges/${id}/join`
     );
     return response.data;
@@ -185,6 +216,51 @@ export const challengeApi = {
         status,
       }
     );
+    return response.data;
+  },
+};
+
+// ============================================================================
+// INVITE APIs
+// ============================================================================
+export const inviteApi = {
+  sendInvite: async (challengeId: string, userId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite`,
+      { userId }
+    );
+    return response.data;
+  },
+
+  getMyInvites: async () => {
+    const response = await api.get<ApiResponse<ChallengeInvite[]>>("/api/invites");
+    return response.data;
+  },
+
+  acceptInvite: async (challengeId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite/accept`
+    );
+    return response.data;
+  },
+
+  rejectInvite: async (challengeId: string) => {
+    const response = await api.post<ApiResponse<ChallengeInvite>>(
+      `/api/challenge/${challengeId}/invite/reject`
+    );
+    return response.data;
+  },
+};
+
+// ============================================================================
+// USER APIs
+// ============================================================================
+export const userApi = {
+  searchUsers: async (query: string, signal?: AbortSignal) => {
+    const response = await api.get<ApiResponse<UserSearchResult[]>>("/api/users/search", {
+      params: { q: query },
+      signal,
+    });
     return response.data;
   },
 };
@@ -208,40 +284,40 @@ export const dashboardApi = {
   },
 
   getChallengeProgress: async (challengeId: string) => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<ChartData[]>>(
       `/api/dashboard/challenge/${challengeId}`
     );
     return response.data;
   },
 
   getChallengeLeaderboard: async (challengeId: string) => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<LeaderboardEntry[]>>(
       `/api/dashboard/challenge/${challengeId}/leaderboard`
     );
     return response.data;
   },
 
   getActivityHeatmap: async () => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<ActivityData[]>>(
       "/api/dashboard/activity-heatmap"
     );
     return response.data;
   },
 
   getStats: async () => {
-    const response = await api.get<ApiResponse<any>>("/api/dashboard/stats");
+    const response = await api.get<ApiResponse<DashboardStats>>("/api/dashboard/stats");
     return response.data;
   },
 
   getSubmissionChart: async () => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<ChartData[]>>(
       "/api/dashboard/submission-chart"
     );
     return response.data;
   },
 
   getGlobalLeaderboard: async () => {
-    const response = await api.get<ApiResponse<any[]>>(
+    const response = await api.get<ApiResponse<LeaderboardEntry[]>>(
       "/api/dashboard/leaderboard"
     );
     return response.data;
@@ -257,7 +333,7 @@ export const leetcodeApi = {
     csrfToken: string,
     expiresAt: string
   ) => {
-    const response = await api.post<ApiResponse<any>>("/api/leetcode/session", {
+    const response = await api.post<ApiResponse<unknown>>("/api/leetcode/session", {
       cookie,
       csrfToken,
       expiresAt,
@@ -266,33 +342,37 @@ export const leetcodeApi = {
   },
 
   getSessionStatus: async () => {
-    const response = await api.get<ApiResponse<any>>("/api/leetcode/session");
+    const response = await api.get<ApiResponse<SessionStatus>>("/api/leetcode/session");
     return response.data;
   },
 
   invalidateSession: async () => {
-    const response = await api.delete<ApiResponse<any>>(
+    const response = await api.delete<ApiResponse<null>>(
       "/api/leetcode/session"
     );
     return response.data;
   },
 
   getProfile: async (username: string) => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<LeetCodeProfile>>(
       `/api/leetcode/profile/${username}`
     );
     return response.data;
   },
 
   testConnection: async (username: string) => {
-    const response = await api.get<ApiResponse<any>>(
+    interface TestResponse {
+      submissions?: unknown[];
+      message?: string;
+    }
+    const response = await api.get<ApiResponse<TestResponse>>(
       `/api/leetcode/test/${username}`
     );
     return response.data;
   },
 
   getProblemMetadata: async (titleSlug: string) => {
-    const response = await api.get<ApiResponse<any>>(
+    const response = await api.get<ApiResponse<Record<string, unknown>>>(
       `/api/leetcode/problem/${titleSlug}`
     );
     return response.data;
