@@ -52,12 +52,8 @@ export default function ViewZap() {
     const errorParam = params.get("error");
     const errorMsg = getErrorMessage(errorParam);
     if (errorMsg) {
-      if (errorParam === "incorrect_password") {
-        setPasswordRequired(true);
-        setPasswordError(errorMsg);
-        setLoading(false);
-        return;
-      }
+      // Note: "incorrect_password" is no longer raised via URL param;
+      // password errors are handled client-side in handlePasswordSubmit.
       setError(errorMsg);
       setErrorType(errorParam);
       toast.error(errorMsg);
@@ -140,15 +136,10 @@ export default function ViewZap() {
       const apiUrl = import.meta.env.VITE_BACKEND_URL
         ? `${import.meta.env.VITE_BACKEND_URL}/api/zaps/${shortId}`
         : `/api/zaps/${shortId}`;
-      const response = await axios.get(
-        apiUrl,
-        {
-          params: { password },
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      // Security fix: password is sent in the POST request body instead of
+      // a query parameter, preventing credential leakage via server logs,
+      // browser history, and monitoring tools.
+      const response = await axios.post(apiUrl, { password });
 
       // Handle successful response
       if (response.data) {
