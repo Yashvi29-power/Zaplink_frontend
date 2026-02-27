@@ -105,6 +105,9 @@ function getFormDataHash({
 }
 
 export default function UploadPage() {
+    // Validation states for self-destruct inputs
+    const [viewsError, setViewsError] = useState("");
+    const [timeError, setTimeError] = useState("");
   const location = useLocation();
   const initialType = (location.state?.type as FileType) || "pdf";
   const navigate = useNavigate();
@@ -265,6 +268,22 @@ export default function UploadPage() {
 
   // After successful QR generation, store QR and form hash
   const handleGenerateAndContinue = async () => {
+        // Validate self-destruct views
+        if (selfDestruct && destructViews) {
+          if (!viewsValue.trim() || isNaN(Number(viewsValue)) || Number(viewsValue) < 1) {
+            setViewsError("Please enter a positive integer (min 1)");
+            toast.error("Invalid value for 'After Views'. Please enter a positive integer.");
+            return;
+          }
+        }
+        // Validate self-destruct time
+        if (selfDestruct && destructTime) {
+          if (!timeValue.trim() || isNaN(Number(timeValue)) || Number(timeValue) < 1) {
+            setTimeError("Please enter a positive integer (min 1)");
+            toast.error("Invalid value for 'After Time'. Please enter a positive integer.");
+            return;
+          }
+        }
     if (type === "url") {
       if (!urlValue || !/^https?:\/\//.test(urlValue)) {
         toast.error("Please enter a valid http:// or https:// link");
@@ -601,6 +620,11 @@ export default function UploadPage() {
     const value = e.target.value;
     if (value === "" || !isNaN(Number(value))) {
       setViewsValue(value);
+      if (value === "" || Number(value) < 1) {
+        setViewsError("Please enter a positive integer (min 1)");
+      } else {
+        setViewsError("");
+      }
     }
   };
 
@@ -608,6 +632,11 @@ export default function UploadPage() {
     const value = e.target.value;
     if (value === "" || !isNaN(Number(value))) {
       setTimeValue(value);
+      if (value === "" || Number(value) < 1) {
+        setTimeError("Please enter a positive integer (min 1)");
+      } else {
+        setTimeError("");
+      }
     }
   };
 
@@ -1111,11 +1140,15 @@ export default function UploadPage() {
                     <div className="pl-8">
                       <Input
                         type="number"
+                        min={1}
                         placeholder="Number of views"
                         value={viewsValue}
                         onChange={handleViewsValueChange}
-                        className="input-focus rounded-xl border-border bg-background h-12 focus-ring"
+                        className={`input-focus rounded-xl border-border bg-background h-12 focus-ring ${viewsError ? 'border-destructive' : ''}`}
                       />
+                      {viewsError && (
+                        <p className="text-destructive text-xs mt-1">{viewsError}</p>
+                      )}
                     </div>
                   )}
 
@@ -1141,11 +1174,15 @@ export default function UploadPage() {
                     <div className="pl-8">
                       <Input
                         type="number"
+                        min={1}
                         placeholder="Hours until expiration"
                         value={timeValue}
                         onChange={handleTimeValueChange}
-                        className="input-focus rounded-xl border-border bg-background h-12 focus-ring"
+                        className={`input-focus rounded-xl border-border bg-background h-12 focus-ring ${timeError ? 'border-destructive' : ''}`}
                       />
+                      {timeError && (
+                        <p className="text-destructive text-xs mt-1">{timeError}</p>
+                      )}
                     </div>
                   )}
                 </div>
