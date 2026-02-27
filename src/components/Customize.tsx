@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  PackageOpen,
 } from "lucide-react";
 import DeleteZapModal from "./DeleteZapModal";
 import { QRCodeSVG } from "qrcode.react";
@@ -30,6 +31,14 @@ import {
 } from "./ui/select";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
+
+import FormatSelector from "./export/FormatSelector";
+import ResolutionSelector from "./export/ResolutionSelector";
+import ExportPreview from "./export/ExportPreview";
+import type { ExportFormat } from "../lib/qr-export";
+import { exportQRCode, batchExport } from "../lib/qr-export";
+
+/* ================= TYPES ================= */
 
 type FrameOption =
   | "none"
@@ -48,28 +57,40 @@ type CustomizePageState = {
   deletionToken?: string;
 };
 
+/* ================= COMPONENT ================= */
+
 export default function CustomizePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = (location.state as CustomizePageState) || null;
+
   const qrRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [frameStyle, setFrameStyle] = useState<FrameOption>("none");
   const [logo, setLogo] = useState<string | null>(null);
+  const [fgColor, setFgColor] = useState("#000000");
   const [copied, setCopied] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [tokenCopied, setTokenCopied] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [tokenConfirmed, setTokenConfirmed] = useState(false);
   const [animateQR, setAnimateQR] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fgColor, setFgColor] = useState("#000000");
+
+  /* ---- Multi-format export (PR feature) ---- */
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
+  const [exportResolution, setExportResolution] = useState(1000);
+  const [exportQuality, setExportQuality] = useState(85);
+  const [isExporting, setIsExporting] = useState(false);
 
   const qrValue = state?.shortUrl || "https://zaplink.example.com/demo123";
+
+  /* ================= HANDLERS ================= */
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) setLogo(event.target.result as string);
@@ -99,128 +120,98 @@ export default function CustomizePage() {
         };
       case "shadow":
         return {
-          boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
           padding: 24,
           background: "hsl(var(--card))",
           borderRadius: 16,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
         };
       case "gradient":
         return {
           padding: 24,
+          borderRadius: 20,
           background:
             "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 100%)",
-          borderRadius: 20,
           boxShadow: "0 8px 32px hsl(var(--primary) / 0.3)",
         };
       case "border":
         return {
           padding: 24,
-          border: "3px solid hsl(var(--primary))",
           borderRadius: 16,
+          border: "3px solid hsl(var(--primary))",
           background: "hsl(var(--card))",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
         };
       default:
         return {};
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!qrRef.current) return;
-    const svgElement = qrRef.current.querySelector("svg");
-    if (!svgElement) return;
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const svgUrl = URL.createObjectURL(svgBlob);
-    const img = new Image();
+    setIsExporting(true);
+    try {
+      await exportQRCode(qrRef.current, {
+        format: exportFormat,
+        resolution: exportResolution,
+        quality: exportQuality,
+        includeFrame: frameStyle !== "none",
+        includeLogo: !!logo,
+        fileName: `zaplink-qr-${state?.name || "code"}`,
+      });
+      toast.success(`QR exported as ${exportFormat.toUpperCase()}`);
+    } catch {
+      toast.error("Export failed");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
-    // Cleanup function to ensure URL is always revoked
-    const cleanup = () => {
-      URL.revokeObjectURL(svgUrl);
-    };
-
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 300;
-        canvas.height = 300;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          cleanup();
-          toast.error(
-            "Failed to create canvas context. Please try again."
-          );
-          return;
-        }
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const pngFile = canvas.toDataURL("image/png");
-        const downloadLink = document.createElement("a");
-        downloadLink.download = `zaplink-qr-${state?.name || "code"}.png`;
-        downloadLink.href = pngFile;
-        downloadLink.click();
-        toast.success("Your QR code has been downloaded successfully.");
-      } catch (error) {
-        toast.error("Failed to generate QR image. Please try again.");
-      } finally {
-        cleanup();
-      }
-    };
-
-    img.onerror = () => {
-      cleanup();
-      toast.error("Failed to load QR image. Please try again.");
-    };
-
-    img.src = svgUrl;
+  const handleBatchDownload = async () => {
+    if (!qrRef.current) return;
+    setIsExporting(true);
+    try {
+      await batchExport(
+        qrRef.current,
+        `zaplink-qr-${state?.name || "code"}`,
+        exportResolution,
+        exportQuality
+      );
+      toast.success("All formats downloaded");
+    } catch {
+      toast.error("Batch export failed");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(qrValue);
-      setCopied(true);
-      toast.success("Short link has been copied to clipboard.");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy link. Please try again.");
-    }
+    await navigator.clipboard.writeText(qrValue);
+    setCopied(true);
+    toast.success("Link copied");
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: "My QR Code",
-          text: "Check out my QR code",
-          url: qrValue,
-        })
-        .catch(() => toast.error("Error sharing, please try again."));
-    } else {
-      toast.error("Sharing is not supported on this browser.");
+    if (!navigator.share) {
+      toast.error("Sharing not supported");
+      return;
     }
+    navigator.share({ title: "My QR Code", url: qrValue });
   };
 
   const handleCopyToken = async () => {
     if (!state?.deletionToken) return;
-    try {
-      await navigator.clipboard.writeText(state.deletionToken);
-      setTokenCopied(true);
-      toast.success("Deletion token copied to clipboard");
-      setTimeout(() => setTokenCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy token");
-    }
+    await navigator.clipboard.writeText(state.deletionToken);
+    setTokenCopied(true);
+    toast.success("Deletion token copied");
+    setTimeout(() => setTokenCopied(false), 2000);
   };
 
   const handleDeleteSuccess = () => {
     toast.success("Redirecting to home...");
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
+    setTimeout(() => navigate("/"), 1000);
   };
+
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-background">
@@ -232,7 +223,7 @@ export default function CustomizePage() {
               Step 3 of 3
             </span>
             <div className="flex-1 mx-4 h-2 bg-muted rounded-full overflow-hidden">
-              <div className="progress-bar h-full w-full bg-gradient-to-r from-primary via-primary/80 to-primary shadow-md transition-all duration-700"></div>
+              <div className="progress-bar h-full w-full"></div>
             </div>
             <span className="text-xs sm:text-sm text-primary font-semibold flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
@@ -240,17 +231,16 @@ export default function CustomizePage() {
             </span>
           </div>
 
-          {/* Two-column layout: Preview on left, Controls on right */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* QR Preview Card */}
-            <div className="flex flex-col items-center justify-center order-2 lg:order-1">
-              <div className="bg-gradient-to-br from-muted/30 to-muted/10 p-8 sm:p-12 rounded-3xl border border-border/50 shadow-xl backdrop-blur-sm">
+            {/* Preview */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-muted/20 p-10 rounded-3xl border border-border">
                 <div
                   ref={qrRef}
-                  className={`flex items-center justify-center transition-all duration-500 hover:scale-105 ${
-                    animateQR ? "scale-110 opacity-80" : "scale-100 opacity-100"
-                  }`}
                   style={getFrameStyle()}
+                  className={`transition-all duration-300 ${
+                    animateQR ? "scale-110" : "scale-100"
+                  }`}
                 >
                   <QRCodeSVG
                     value={qrValue}
@@ -261,161 +251,100 @@ export default function CustomizePage() {
                     includeMargin
                     imageSettings={
                       logo
-                        ? { src: logo, height: 50, width: 50, excavate: true }
+                        ? { src: logo, width: 50, height: 50, excavate: true }
                         : undefined
                     }
                   />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-6 text-center">
-                Scan to preview your QR code
-              </p>
             </div>
 
-            {/* Customization Controls */}
-            <div className="space-y-8 order-1 lg:order-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Palette className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-                  Design Options
-                </h2>
-              </div>
-
-              {/* Frame Style Selector */}
-              <div className="space-y-4">
-                <Label
-                  htmlFor="frame-style"
-                  className="text-base font-semibold text-foreground flex items-center gap-2"
-                >
-                  <span className="w-2 h-2 bg-primary rounded-full"></span>
-                  Frame Style
-                </Label>
-                <Select
-                  value={frameStyle}
-                  onValueChange={(value: string) => {
-                    setFrameStyle(value as FrameOption);
-                    setAnimateQR(true);
-                    setTimeout(() => setAnimateQR(false), 400);
-                  }}
-                >
-                  <SelectTrigger
-                    id="frame-style"
-                    className="w-full h-12 rounded-xl border-border bg-background text-foreground font-medium focus-ring"
-                  >
-                    <SelectValue placeholder="Select a frame style" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border border-border bg-card text-foreground shadow-2xl">
-                    <SelectItem value="none" className="rounded-lg">
-                      None
-                    </SelectItem>
-                    <SelectItem value="rounded" className="rounded-lg">
-                      Rounded Corners
-                    </SelectItem>
-                    <SelectItem value="circle" className="rounded-lg">
-                      Circle
-                    </SelectItem>
-                    <SelectItem value="shadow" className="rounded-lg">
-                      Shadow
-                    </SelectItem>
-                    <SelectItem value="gradient" className="rounded-lg">
-                      Gradient
-                    </SelectItem>
-                    <SelectItem value="border" className="rounded-lg">
-                      Accent Border
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Foreground Color Picker */}
-              <div className="space-y-4">
-                <Label htmlFor="fg-color" className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                  QR Foreground Color
-                </Label>
-
-                <input
-                  id="fg-color"
-                  type="color"
-                  value={fgColor}
-                  onChange={(e) => {
-                    setFgColor(e.target.value);
-                    setAnimateQR(true);
-                    setTimeout(() => setAnimateQR(false), 400);
-                  }}
-                  className="w-20 h-12 cursor-pointer rounded-md border border-border bg-background"
-                  title="Choose QR code foreground color"
-                />
-              </div>
-
-              {/* Logo Upload */}
-              <div className="space-y-4">
-                <Label
-                  htmlFor="logo-upload"
-                  className="text-base font-semibold text-foreground flex items-center gap-2"
-                >
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  Upload Logo (Optional)
-                </Label>
-                <div
-                  className="relative border-2 border-dashed rounded-2xl p-6 text-center transition-all duration-300 cursor-pointer border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5 backdrop-blur-sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    id="logo-upload"
-                    accept="image/*"
-                    title="Upload logo image"
-                    aria-label="Upload logo image for QR code"
-                  />
-                  {logo ? (
-                    <div className="flex items-center justify-center space-x-3">
-                      <img
-                        src={logo}
-                        alt="Logo Preview"
-                        className="h-16 w-16 object-contain rounded-lg"
-                      />
-                      <span className="text-foreground font-medium">
-                        Logo uploaded
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLogo(null);
-                          toast.info("Logo removed"); // Feedback for logo removal
-                        }}
-                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg focus-ring"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>{" "}
-                      {/* Ensure this closing tag is present */}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center space-y-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Upload className="h-8 w-8 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          Click to upload image
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          PNG, JPG up to 2MB
-                        </p>
-                      </div>
-                    </div>
+            {/* Controls */}
+            <div className="space-y-6">
+              <Label>Frame Style</Label>
+              <Select
+                value={frameStyle}
+                onValueChange={(v) => setFrameStyle(v as FrameOption)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["none", "rounded", "circle", "shadow", "gradient", "border"].map(
+                    (v) => (
+                      <SelectItem key={v} value={v}>
+                        {v}
+                      </SelectItem>
+                    )
                   )}
-                </div>
+                </SelectContent>
+              </Select>
+
+              <Label>QR Color</Label>
+              <input
+                type="color"
+                value={fgColor}
+                onChange={(e) => setFgColor(e.target.value)}
+              />
+
+              <Button onClick={() => fileInputRef.current?.click()}>
+                <Upload className="mr-2 h-4 w-4" /> Upload Logo
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleLogoUpload}
+              />
+
+              <FormatSelector
+                value={exportFormat}
+                onChange={setExportFormat}
+              />
+              <ResolutionSelector
+                value={exportResolution}
+                onChange={setExportResolution}
+                disabled={exportFormat === "svg" || exportFormat === "pdf"}
+              />
+              <ExportPreview
+                format={exportFormat}
+                resolution={exportResolution}
+                quality={exportQuality}
+                onQualityChange={setExportQuality}
+              />
+
+              <Button onClick={handleDownload} disabled={isExporting}>
+                <Download className="mr-2 h-4 w-4" />
+                {isExporting ? "Exporting..." : "Download"}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleBatchDownload}
+                disabled={isExporting}
+              >
+                <PackageOpen className="mr-2 h-4 w-4" />
+                Download All
+              </Button>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleCopyLink}>
+                  {copied ? <Check /> : <Copy />} Copy Link
+                </Button>
+                <Button variant="outline" onClick={handleShare}>
+                  <Share2 /> Share
+                </Button>
               </div>
 
+              {state?.deletionToken && (
+                <Button
+                  variant="destructive"
+                  onClick={() => setDeleteModalOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Zap
+                </Button>
+              )}
               {/* Actions */}
               <div className="space-y-6 pt-6 border-t border-border">
                 <div className="flex items-center gap-3 mb-4">
@@ -577,20 +506,14 @@ export default function CustomizePage() {
             </div>
           </div>
 
-          {/* Back Button */}
-          <div className="mt-8 pt-6 border-t border-border">
-            <Link
-              to="/upload"
-              state={{ type: state?.type?.toLowerCase() || "pdf" }}
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105 focus-ring rounded-lg p-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Upload</span>
-            </Link>
-          </div>
+          <Link
+            to="/upload"
+            className="inline-flex items-center gap-2 text-muted-foreground"
+          >
+            <ArrowLeft /> Back to Upload
+          </Link>
         </div>
 
-        {/* Delete Confirmation Modal */}
         {state?.zapId && (
           <DeleteZapModal
             open={deleteModalOpen}
