@@ -11,8 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+<<<<<<< HEAD
 .env
 env
+=======
+>>>>>>> upstream/main
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +27,11 @@ env
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
+=======
+.env
+
+# Generated JS artifacts from TS/TSX (do not commit)
+src/**/*.js
+src/**/*.js.map
+>>>>>>> upstream/main

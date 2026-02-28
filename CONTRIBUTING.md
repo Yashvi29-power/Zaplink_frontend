@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Contributing to Zaplink Frontend
 
 Thank you for your interest in contributing to **Zaplink** as part of the **GDG CHARUSAT Open Source Contri Sprintathon**! 🎉
@@ -5,6 +6,15 @@ Thank you for your interest in contributing to **Zaplink** as part of the **GDG 
 ---
 
 ## 🚨 Contribution Rules (Strict Enforcement)
+=======
+# Contributing to Code Duel Frontend
+
+Thank you for your interest in contributing to **Code Duel** as part of the **GDG CHARUSAT Open Source Contri Sprintathon**! 
+
+---
+
+## Contribution Rules (Strict Enforcement)
+>>>>>>> upstream/main
 
 > **Read this section carefully before doing anything. Violations will result in your PR being closed without review.**
 
@@ -20,7 +30,11 @@ Thank you for your interest in contributing to **Zaplink** as part of the **GDG 
 
 ---
 
+<<<<<<< HEAD
 ## 📌 Issue Policy
+=======
+## Issue Policy
+>>>>>>> upstream/main
 
 - Contributors may create new issues for:
   - Bugs
@@ -36,7 +50,11 @@ Thank you for your interest in contributing to **Zaplink** as part of the **GDG 
 
 ---
 
+<<<<<<< HEAD
 ## 🚀 Reporting Bugs or Proposing Improvements
+=======
+## Reporting Bugs or Proposing Improvements
+>>>>>>> upstream/main
 
 If you identify:
 
@@ -50,7 +68,11 @@ You must **create a new issue and wait for it to be approved**.
 
 ---
 
+<<<<<<< HEAD
 ### 📌 Important Guidelines
+=======
+### Important Guidelines
+>>>>>>> upstream/main
 
 - ✅ Open a new issue describing the problem clearly and wait for maintainer acknowledgment before submitting a Pull Request.
 - ✅ Submit a Pull Request with a clear and structured description.  
@@ -69,6 +91,7 @@ Please ensure that your contribution is meaningful, well-tested, and professiona
 
 ---
 
+<<<<<<< HEAD
 ## 🔐 Environment Variables & Secrets
 
 Some issues may require environment variables (API keys, secrets, credentials, etc.).
@@ -84,6 +107,25 @@ If you need environment variables to work on an assigned issue, please contact t
 Environment details will be shared **only after the issue is officially assigned to you**.
 
 ## 🛠 Tech Stack
+=======
+## Environment Variables & Secrets
+
+Some issues may require environment variables (API keys, secrets, credentials, etc.).
+
+ **Do NOT ask for environment variables in issues or pull requests.**  
+ **Do NOT commit secrets to the repository.**
+
+If you need environment variables to work on an assigned issue, please contact the organizers privately:
+
+- **WhatsApp:** +91-8347036131 || +91-9227448882
+- **Email:** jadejakrishnapal04@gmail.com || aaleya2604@gmail.com
+
+Environment details will be shared **only after the issue is officially assigned to you**.
+
+---
+
+## Tech Stack
+>>>>>>> upstream/main
 
 This project uses:
 - **Frontend Framework**: React.js with TypeScript
@@ -92,7 +134,13 @@ This project uses:
 - **UI Components**: Shadcn/ui
 - **Package Manager**: npm
 
+<<<<<<< HEAD
 ## ✅ Prerequisites
+=======
+---
+
+## Prerequisites
+>>>>>>> upstream/main
 
 Before you begin, ensure you have the following installed:
 
@@ -101,21 +149,37 @@ Before you begin, ensure you have the following installed:
 - [Git](https://git-scm.com/)
 - A code editor (VS Code recommended)
 
+<<<<<<< HEAD
 ## 🚀 Getting Started
 
 ### Step 1: Fork the Repository
 
 1. Navigate to the [Zaplink Frontend repository](https://github.com/gdg-charusat/Zaplink_frontend)
+=======
+---
+
+## Getting Started
+
+### Step 1: Fork the Repository
+
+1. Navigate to the [Code Duel Frontend repository](https://github.com/gdg-charusat/Code_duel_frontend)
+>>>>>>> upstream/main
 2. Click the **Fork** button in the top-right corner
 3. This creates a copy of the repository in your GitHub account
 
 ### Step 2: Clone Your Fork
 
+<<<<<<< HEAD
 Clone the forked repository to your local machine:
 
 ```bash
 git clone https://github.com/YOUR-USERNAME/Zaplink_frontend.git
 cd Zaplink_frontend
+=======
+```bash
+git clone https://github.com/YOUR-USERNAME/Code_duel_frontend.git
+cd Code_duel_frontend
+>>>>>>> upstream/main
 ```
 
 Replace `YOUR-USERNAME` with your GitHub username.
@@ -125,7 +189,11 @@ Replace `YOUR-USERNAME` with your GitHub username.
 Add the original repository as an upstream remote to keep your fork synced:
 
 ```bash
+<<<<<<< HEAD
 git remote add upstream https://github.com/gdg-charusat/Zaplink_frontend.git
+=======
+git remote add upstream https://github.com/gdg-charusat/Code_duel_frontend.git
+>>>>>>> upstream/main
 ```
 
 Verify the remotes:
@@ -135,20 +203,31 @@ git remote -v
 ```
 
 You should see:
+<<<<<<< HEAD
 - `origin` - your fork (https://github.com/YOUR-USERNAME/Zaplink_frontend.git)
 - `upstream` - the original repository (https://github.com/gdg-charusat/Zaplink_frontend.git)
+=======
+- `origin` - your fork (`https://github.com/YOUR-USERNAME/Code_duel_frontend.git`)
+- `upstream` - the original repository (`https://github.com/gdg-charusat/Code_duel_frontend.git`)
+>>>>>>> upstream/main
 
 ### Step 4: Install Dependencies
 
 ```bash
+<<<<<<< HEAD
 # Install all project dependencies
+=======
+>>>>>>> upstream/main
 npm install
 ```
 
 ### Step 5: Start Development Server
 
 ```bash
+<<<<<<< HEAD
 # Start the Vite development server
+=======
+>>>>>>> upstream/main
 npm run dev
 ```
 
@@ -175,11 +254,21 @@ git checkout -b feature/your-feature-name
 - `style/` - for styling changes (e.g., `style/improve-button-design`)
 - `refactor/` - for code refactoring (e.g., `refactor/optimize-components`)
 
+<<<<<<< HEAD
 ## 💻 Development Workflow
 
 ### 1. Pick an Issue
 
 - Browse the [Issues](https://github.com/gdg-charusat/Zaplink_frontend/issues) page
+=======
+---
+
+## Development Workflow
+
+### 1. Pick an Issue
+
+- Browse the [Issues](https://github.com/gdg-charusat/Code_duel_frontend/issues) page
+>>>>>>> upstream/main
 - Look for issues labeled:
   - `good-first-issue` or `beginner` - for beginners (Level 1)
   - `intermediate` - for intermediate level (Level 2)
@@ -191,7 +280,10 @@ git checkout -b feature/your-feature-name
 ### 2. Make Your Changes
 
 - Write clean, readable code
+<<<<<<< HEAD
 - Follow the project's code style guidelines (see below)
+=======
+>>>>>>> upstream/main
 - Test your changes thoroughly in the browser
 - Ensure the application runs without errors or warnings
 
@@ -204,7 +296,11 @@ npm run dev
 # Build the project to check for errors
 npm run build
 
+<<<<<<< HEAD
 # Run linting (if configured)
+=======
+# Run linting
+>>>>>>> upstream/main
 npm run lint
 ```
 
@@ -218,6 +314,7 @@ git commit -m "feat: add user authentication modal"
 ```
 
 **Commit Message Format:**
+<<<<<<< HEAD
 - `feat:` - new feature (e.g., "feat: add dark mode toggle")
 - `fix:` - bug fix (e.g., "fix: resolve navbar mobile responsiveness")
 - `docs:` - documentation changes (e.g., "docs: update installation guide")
@@ -225,6 +322,15 @@ git commit -m "feat: add user authentication modal"
 - `refactor:` - code restructuring (e.g., "refactor: simplify form validation logic")
 - `test:` - adding tests (e.g., "test: add unit tests for auth service")
 - `chore:` - maintenance tasks (e.g., "chore: update dependencies")
+=======
+- `feat:` - new feature (e.g., `feat: add dark mode toggle`)
+- `fix:` - bug fix (e.g., `fix: resolve navbar mobile responsiveness`)
+- `docs:` - documentation changes (e.g., `docs: update installation guide`)
+- `style:` - formatting, CSS changes (e.g., `style: improve button hover effects`)
+- `refactor:` - code restructuring (e.g., `refactor: simplify form validation logic`)
+- `test:` - adding tests (e.g., `test: add unit tests for auth service`)
+- `chore:` - maintenance tasks (e.g., `chore: update dependencies`)
+>>>>>>> upstream/main
 
 **Examples of Good Commit Messages:**
 ```bash
@@ -243,21 +349,41 @@ git push origin feature/your-feature-name
 
 ### 6. Create a Pull Request
 
+<<<<<<< HEAD
 1. Go to your fork on GitHub: `https://github.com/YOUR-USERNAME/Zaplink_frontend`
 2. Click **"Compare & pull request"** button
 3. Fill out the PR template completely:
    - **Title**: Clear, descriptive title (e.g., "Add loading spinner component")
    - **Team Number**: You **must** state your team number (e.g., `Team 07`) — PRs without this will be closed
    - **Issue Reference**: Link the assigned issue (e.g., `Closes #42`) — PRs without a linked issue will be closed unless it's a general improvement PR
+=======
+1. Go to your fork on GitHub: `https://github.com/YOUR-USERNAME/Code_duel_frontend`
+2. Click **"Compare & pull request"** button
+3. Fill out the PR template completely:
+   - **Title**: Clear, descriptive title (e.g., `feat: add loading spinner component`)
+   - **Team Number**: You **must** state your team number (e.g., `Team 07`) - PRs without this will be closed
+   - **Issue Reference**: Link the assigned issue (e.g., `Closes #42`) - PRs without a linked issue will be closed unless it's a general improvement PR
+>>>>>>> upstream/main
    - **Description**: Explain what changes you made and why
    - **Screenshots**: Add before/after screenshots if UI changes are involved
 4. Click **"Create pull request"**
 
+<<<<<<< HEAD
+=======
+> **For General Improvement PRs** (bugs or enhancements not linked to any issue): You must still include your **Team Number** and a clear explanation of what you changed and why. These PRs are reviewed strictly.
+
+---
+
+>>>>>>> upstream/main
 ## 📝 Issue Guidelines
 
 ### Finding Issues
 
+<<<<<<< HEAD
 Issues are categorized by difficulty level. Contributors may also create well-documented issues for valid improvements.
+=======
+Issues are categorized by difficulty level and **created exclusively by organizers**:
+>>>>>>> upstream/main
 
 **Beginner Level (Good First Issues)**
 - Simple UI fixes
@@ -278,7 +404,11 @@ Issues are categorized by difficulty level. Contributors may also create well-do
 1. Find an unassigned issue you want to work on
 2. **Comment on the issue** with this format:
    > *"I'd like to work on this. - Team [your team number]"*
+<<<<<<< HEAD
 3. **Wait for a maintainer to assign it to you** — this is mandatory
+=======
+3. **Wait for a maintainer to assign it to you** - this is mandatory
+>>>>>>> upstream/main
 4. Once assigned, start working and submit your PR within **3–5 days**
 5. If you can't complete it in time, comment to let maintainers know
 
@@ -299,9 +429,15 @@ When creating a new issue:
    - Screenshots (if UI-related)
 3. Wait for maintainer review before starting work
 
+<<<<<<< HEAD
 ## 🔄 Pull Request Process
 
 ### PR Requirements — Non-Negotiable
+=======
+## Pull Request Process
+
+### PR Requirements - Non-Negotiable
+>>>>>>> upstream/main
 
 > PRs that don't meet ALL of the following will be **closed without review**:
 
@@ -315,7 +451,11 @@ When creating a new issue:
 - [ ] Code runs without errors (`npm run dev` works)
 - [ ] Project builds successfully (`npm run build`)
 - [ ] All new components are properly typed (TypeScript)
+<<<<<<< HEAD
 - [ ] Tailwind CSS classes used — no inline styles
+=======
+- [ ] Tailwind CSS classes used - no inline styles
+>>>>>>> upstream/main
 - [ ] Tested on different screen sizes
 - [ ] No console errors or warnings
 - [ ] Commit messages follow the conventional format
@@ -323,9 +463,15 @@ When creating a new issue:
 ### PR Review Process
 
 1. A maintainer will review your PR within 24–48 hours
+<<<<<<< HEAD
 2. You may be asked to make changes — respond promptly
 3. Make requested changes and push to the same branch (PR auto-updates)
 4. **Only maintainers can approve and merge** — do not request peers to merge
+=======
+2. You may be asked to make changes - respond promptly
+3. Make requested changes and push to the same branch (PR auto-updates)
+4. **Only maintainers can approve and merge** - do not request peers to merge
+>>>>>>> upstream/main
 
 ### Addressing Review Comments
 
@@ -336,6 +482,7 @@ git commit -m "fix: address review comments"
 git push origin feature/your-feature-name
 ```
 
+<<<<<<< HEAD
 ## 🎨 Code Style Guidelines
 
 ### TypeScript
@@ -471,3 +618,30 @@ Please be respectful and professional in all interactions. We're here to learn a
 If you have any questions or need clarification, feel free to reach out to the maintainers or ask in the issue comments.
 
 Thank you for contributing to Zaplink!
+=======
+## Need Help?
+
+- **Issue Discussion**: Comment on the issue you're working on
+- **WhatsApp**: Join the GDG CHARUSAT event group
+- **Maintainers**: Tag @maintainer-username in your issue comments
+- **Documentation**: Check [React Docs](https://react.dev/), [Vite Docs](https://vitejs.dev/), [Tailwind Docs](https://tailwindcss.com/), [pnpm Docs](https://pnpm.io/)
+
+---
+
+## Tips for Success
+
+1. **Start Small**: Begin with beginner issues to understand the codebase
+2. **Read Existing Code**: Look at how similar features are implemented
+3. **Always use pnpm**: Never switch to npm or yarn mid-project
+4. **Ask Questions**: It's better to ask than to waste time going in the wrong direction
+5. **Be Patient**: Code review takes time, be responsive to feedback
+6. **Have Fun**: Open source is about learning and community!
+
+---
+
+**Happy Coding! **
+
+If you have any questions or need clarification, feel free to reach out to the maintainers or ask in the issue comments.
+
+Thank you for contributing to Code Duel!
+>>>>>>> upstream/main
